@@ -1,9 +1,7 @@
 #include "hello_controller.h"
-#include "apps/i18n.h"
 #include <assert.h>
 
-namespace boricj {
-namespace helloworld {
+namespace Helloworld {
 
 HelloController::HelloController(Responder * parentResponder) :
   ViewController(parentResponder)
@@ -25,5 +23,4 @@ bool HelloController::handleEvent(Ion::Events::Event event) {
   return false;
 }
 
-}
 }

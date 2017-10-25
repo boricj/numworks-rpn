@@ -1,12 +1,11 @@
-#ifndef BORICJ_HELLOWORLD_HELLO_CONTROLLER_H
-#define BORICJ_HELLOWORLD_HELLO_CONTROLLER_H
+#ifndef HELLOWORLD_HELLO_CONTROLLER_H
+#define HELLOWORLD_HELLO_CONTROLLER_H
 
 #include <escher.h>
 
 #include "hello_view.h"
 
-namespace boricj {
-namespace helloworld {
+namespace Helloworld {
 
 class HelloController : public ViewController {
 public:
@@ -18,7 +17,6 @@ private:
   HelloView m_helloView;
 };
 
-}
 }
 
 #endif

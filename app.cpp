@@ -4,22 +4,14 @@
 #include "apps/i18n.h"
 #include <assert.h>
 
-namespace boricj {
-namespace helloworld {
+namespace Helloworld {
 
-const I18n::StandardMessage HelloApp("Hello, World!", "Bonjour, Monde!");
-const I18n::StandardMessage HelloAppCapital("Hello, World!", "Bonjour, Monde!");
-
-const char * App::Descriptor::uriName() {
-  return "boricj.hello-world";
+I18n::Message App::Descriptor::name() {
+  return I18n::Message::HelloApp;
 }
 
-const I18n::Message *App::Descriptor::name() {
-  return &HelloApp;
-}
-
-const I18n::Message *App::Descriptor::upperName() {
-  return &HelloAppCapital;
+I18n::Message App::Descriptor::upperName() {
+  return I18n::Message::HelloAppCapital;
 }
 
 const Image * App::Descriptor::icon() {
@@ -48,7 +40,4 @@ App::App(Container * container, Snapshot * snapshot) :
 {
 }
 
-static App::Snapshot::Register r(new App::Snapshot());
-
-}
 }

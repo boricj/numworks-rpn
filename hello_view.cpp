@@ -1,7 +1,8 @@
 #include "hello_view.h"
 
-namespace boricj {
-namespace helloworld {
+#include "apps/i18n.h"
+
+namespace Helloworld {
 
 HelloView::HelloView() :
   View(),
@@ -9,7 +10,7 @@ HelloView::HelloView() :
   m_color(3),
   m_kdcolor(Palette::GreyWhite)
 {
-  m_bufferTextView.setText("Hello, World!");
+  m_bufferTextView.setText(I18n::translate(I18n::Message::HelloApp));
   m_bufferTextView.setFrame(KDRect(0, 0, bounds().width(), bounds().height()));
 }
 
@@ -57,5 +58,4 @@ void HelloView::layoutSubviews() {
   m_bufferTextView.setFrame(KDRect(0, 0, bounds().width(), bounds().height()));
 }
 
-}
 }

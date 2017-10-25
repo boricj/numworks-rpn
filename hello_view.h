@@ -1,10 +1,9 @@
-#ifndef BORICJ_HELLOWORLD_HELLOVIEW_H
-#define BORICJ_HELLOWORLD_HELLOVIEW_H
+#ifndef HELLOWORLD_HELLOVIEW_H
+#define HELLOWORLD_HELLOVIEW_H
 
 #include <escher.h>
 
-namespace boricj {
-namespace helloworld {
+namespace Helloworld {
 
 class HelloView : public View {
 public:
@@ -21,7 +20,6 @@ private:
   KDColor m_kdcolor;
 };
 
-}
 }
 
 #endif

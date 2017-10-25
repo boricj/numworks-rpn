@@ -1,19 +1,17 @@
-#ifndef BORICJ_HELLOWORLD_APP_H
-#define BORICJ_HELLOWORLD_APP_H
+#ifndef HELLOWORLD_APP_H
+#define HELLOWORLD_APP_H
 
 #include <escher.h>
 #include "hello_controller.h"
 
-namespace boricj {
-namespace helloworld {
+namespace Helloworld {
 
 class App : public ::App {
 public:
   class Descriptor : public ::App::Descriptor {
   public:
-    const char * uriName() override;
-    const I18n::Message *name() override;
-    const I18n::Message *upperName() override;
+    I18n::Message name() override;
+    I18n::Message upperName() override;
     const Image * icon() override;
   };
   class Snapshot : public ::App::Snapshot {
@@ -28,7 +26,6 @@ private:
   HelloController m_helloController;
 };
 
-}
 }
 
 #endif
