@@ -35,8 +35,8 @@ void App::Snapshot::reset() {
 }
 
 App::App(Container * container, Snapshot * snapshot) :
-  ::App(container, snapshot, &m_rpnController),
-  m_rpnController(this)
+  ::App(container, snapshot, &m_rpnPromptController),
+  m_rpnPromptController(this)
 {
 }
 

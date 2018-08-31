@@ -5,15 +5,16 @@
 
 namespace Rpn {
 
-class RpnView : public View {
+class RpnPromptView : public View {
 public:
-  RpnView();
+  RpnPromptView();
   void drawRect(KDContext * ctx, KDRect rect) const override;
-  void reload();
+  void setText(const char *text);
   int numberOfSubviews() const override;
   View * subviewAtIndex(int index) override;
 private:
   void layoutSubviews() override;
+  static constexpr int k_border = 8;
   BufferTextView m_bufferTextView;
 };
 

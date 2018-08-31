@@ -3,8 +3,8 @@ snapshot_headers += apps/rpn/app.h
 
 app_objs += $(addprefix apps/rpn/,\
   app.o\
-  rpn_controller.o\
-  rpn_view.o\
+  rpn_prompt_controller.o\
+  rpn_prompt_view.o\
 )
 
 i18n_files += $(addprefix apps/rpn/,\

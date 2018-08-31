@@ -2,7 +2,7 @@
 #define RPN_APP_H
 
 #include <escher.h>
-#include "rpn_controller.h"
+#include "rpn_prompt_controller.h"
 
 namespace Rpn {
 
@@ -23,7 +23,7 @@ public:
   };
 private:
   App(Container * container, Snapshot * snapshot);
-  RpnController m_rpnController;
+  RpnPromptController m_rpnPromptController;
 };
 
 }
