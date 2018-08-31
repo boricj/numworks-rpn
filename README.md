@@ -1,10 +1,10 @@
-# numworks-hello-world
+# numworks-rpn
 
-This is a sample third-party app for the NumWorks calculator.
+This is a RPN calculator for NumWorks.
 
 ## Getting started
 
 ```
-git clone https://github.com/boricj/numworks-hello-world.git apps/hello_world
-make PLATFORM=simulator EPSILON_APPS='hello_world settings'
+git clone https://github.com/boricj/numworks-rpn.git apps/rpn
+make PLATFORM=simulator EPSILON_APPS='rpn settings'
 ```

@@ -1,13 +1,13 @@
-snapshots += Helloworld::App::Snapshot
-snapshot_headers += apps/hello_world/app.h
+snapshots += Rpn::App::Snapshot
+snapshot_headers += apps/rpn/app.h
 
-app_objs += $(addprefix apps/hello_world/,\
+app_objs += $(addprefix apps/rpn/,\
   app.o\
-  hello_controller.o\
-  hello_view.o\
+  rpn_controller.o\
+  rpn_view.o\
 )
 
-i18n_files += $(addprefix apps/hello_world/,\
+i18n_files += $(addprefix apps/rpn/,\
   base.de.i18n\
   base.en.i18n\
   base.es.i18n\
@@ -15,4 +15,4 @@ i18n_files += $(addprefix apps/hello_world/,\
   base.pt.i18n\
 )
 
-app_images += apps/hello_world/helloworld_icon.png
+app_images += apps/rpn/rpn_icon.png

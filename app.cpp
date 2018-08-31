@@ -1,21 +1,21 @@
 #include "app.h"
 #include "apps/apps_container.h"
-#include "helloworld_icon.h"
+#include "rpn_icon.h"
 #include "apps/i18n.h"
 #include <assert.h>
 
-namespace Helloworld {
+namespace Rpn {
 
 I18n::Message App::Descriptor::name() {
-  return I18n::Message::HelloApp;
+  return I18n::Message::RpnApp;
 }
 
 I18n::Message App::Descriptor::upperName() {
-  return I18n::Message::HelloAppCapital;
+  return I18n::Message::RpnAppCapital;
 }
 
 const Image * App::Descriptor::icon() {
-  return ImageStore::HelloworldIcon;
+  return ImageStore::RpnIcon;
 }
 
 App::Snapshot::Snapshot()
@@ -35,8 +35,8 @@ void App::Snapshot::reset() {
 }
 
 App::App(Container * container, Snapshot * snapshot) :
-  ::App(container, snapshot, &m_helloController),
-  m_helloController(this)
+  ::App(container, snapshot, &m_rpnController),
+  m_rpnController(this)
 {
 }
 

@@ -1,23 +1,20 @@
-#ifndef HELLOWORLD_HELLOVIEW_H
-#define HELLOWORLD_HELLOVIEW_H
+#ifndef RPN_RPNVIEW_H
+#define RPN_RPNVIEW_H
 
 #include <escher.h>
 
-namespace Helloworld {
+namespace Rpn {
 
-class HelloView : public View {
+class RpnView : public View {
 public:
-  HelloView();
+  RpnView();
   void drawRect(KDContext * ctx, KDRect rect) const override;
   void reload();
-  void changeColor();
   int numberOfSubviews() const override;
   View * subviewAtIndex(int index) override;
 private:
   void layoutSubviews() override;
   BufferTextView m_bufferTextView;
-  int m_color;
-  KDColor m_kdcolor;
 };
 
 }

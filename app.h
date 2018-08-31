@@ -1,10 +1,10 @@
-#ifndef HELLOWORLD_APP_H
-#define HELLOWORLD_APP_H
+#ifndef RPN_APP_H
+#define RPN_APP_H
 
 #include <escher.h>
-#include "hello_controller.h"
+#include "rpn_controller.h"
 
-namespace Helloworld {
+namespace Rpn {
 
 class App : public ::App {
 public:
@@ -23,7 +23,7 @@ public:
   };
 private:
   App(Container * container, Snapshot * snapshot);
-  HelloController m_helloController;
+  RpnController m_rpnController;
 };
 
 }
