@@ -20,6 +20,7 @@ void RpnStackController::willDisplayCellForIndex(HighlightCell * cell, int index
 
   EvenOddBufferTextCell *realCell = static_cast<EvenOddBufferTextCell *>(cell);
   realCell->setEven(index%2);
+  realCell->setFontSize(KDText::FontSize::Large);
   if ((size_t)index >= m_rpnStack->size()) {
     realCell->setText("");
   }
