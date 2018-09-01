@@ -44,4 +44,8 @@ App::App(Container * container, Snapshot * snapshot) :
 {
 }
 
+Poincare::Context & App::localContext() {
+  return *((AppsContainer*)container())->globalContext();
+}
+
 }

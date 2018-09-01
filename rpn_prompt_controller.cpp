@@ -1,4 +1,5 @@
 #include "rpn_prompt_controller.h"
+#include "app.h"
 #include "../i18n.h"
 #include <assert.h>
 
@@ -25,9 +26,9 @@ View * RpnPromptController::ContentView::subviewAtIndex(int index) {
 
 void RpnPromptController::ContentView::layoutSubviews() {
   KDCoordinate inputViewFrameHeight = 32;
-  KDRect mainViewFrame(0, inputViewFrameHeight, bounds().width(), bounds().height() - inputViewFrameHeight);
+  KDRect mainViewFrame(0, 0, bounds().width(), bounds().height() - inputViewFrameHeight);
   m_mainView.setFrame(mainViewFrame);
-  KDRect inputViewFrame(0, 0, bounds().width(), inputViewFrameHeight);
+  KDRect inputViewFrame(0, bounds().height() - inputViewFrameHeight, bounds().width(), inputViewFrameHeight);
   m_promptView.setFrame(inputViewFrame);
 }
 
@@ -54,7 +55,6 @@ void RpnPromptController::didBecomeFirstResponder() {
 }
 
 bool RpnPromptController::handleEvent(Ion::Events::Event event) {
-  char addCharacter = 0;
   bool handled = false;
 
   if (event == Ion::Events::Backspace) {
@@ -86,7 +86,22 @@ bool RpnPromptController::handleEvent(Ion::Events::Event event) {
     handleEventEXE();
     handled = true;
   }
-  else if (event == Ion::Events::Dot) {
+  else if (handleDigit(event)) {
+    handled = true;
+  }
+  else if (handleOperation(event)) {
+    handled = true;
+  }
+
+  if (handled) {
+    m_view.promptView()->setText(m_textBody);
+  }
+  return handled;
+}
+
+bool RpnPromptController::handleDigit(Ion::Events::Event event) {
+  char addCharacter = '\0';
+  if (event == Ion::Events::Dot) {
     addCharacter = '.';
   }
   else if (event == Ion::Events::Zero) {
@@ -126,15 +141,49 @@ bool RpnPromptController::handleEvent(Ion::Events::Event event) {
     addCharacter = '\x8d';
   }
 
-  if (addCharacter && (m_curTextPtr-m_textBody < k_bufferLength)) {
+  if (addCharacter && (m_curTextPtr-m_textBody < k_bufferLength) && !m_rpnStack->isFull()) {
     *m_curTextPtr++ = addCharacter;
     *m_curTextPtr = '\0';
+    return true;
+  }
+
+  return false;
+}
+
+bool RpnPromptController::handleOperation(Ion::Events::Event event) {
+  bool handled = false;
+
+  Poincare::DynamicHierarchy * dynHier = nullptr;
+  Poincare::StaticHierarchy<2> * staticHier2 = nullptr;
+
+  if (event == Ion::Events::Plus) {
+    dynHier = new Poincare::Addition();
+  }
+  else if (event == Ion::Events::Minus) {
+    staticHier2 = new Poincare::Subtraction();
+  }
+  else if (event == Ion::Events::Multiplication) {
+    dynHier = new Poincare::Multiplication();
+  }
+  else if (event == Ion::Events::Division) {
+    staticHier2 = new Poincare::Division();
+  }
+
+  if (dynHier) {
+    m_rpnStack->doOperation(dynHier, ((Rpn::App*)app())->localContext());
+    dynHier = nullptr;
+    handled = true;
+  }
+  else if (staticHier2) {
+    m_rpnStack->doOperation(staticHier2, ((Rpn::App*)app())->localContext());
+    staticHier2 = nullptr;
     handled = true;
   }
 
   if (handled) {
-    m_view.promptView()->setText(m_textBody);
+    m_view.mainView()->reloadData(false);
   }
+
   return handled;
 }
 

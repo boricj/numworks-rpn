@@ -25,6 +25,7 @@ public:
   private:
     RpnStack m_rpnStack;
   };
+  Poincare::Context & localContext();
 private:
   App(Container * container, Snapshot * snapshot);
   RpnPromptController m_rpnPromptController;

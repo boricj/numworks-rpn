@@ -36,6 +36,8 @@ public:
     BufferTextView m_promptView;
   };
 
+  bool handleDigit(Ion::Events::Event event);
+  bool handleOperation(Ion::Events::Event event);
   void handleEventEXE();
 
   static constexpr int k_bufferLength = TextField::maxBufferSize();
