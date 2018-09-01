@@ -157,15 +157,27 @@ bool RpnPromptController::handleOperation(Ion::Events::Event event) {
   Poincare::StaticHierarchy<2> * staticHier2 = nullptr;
 
   if (event == Ion::Events::Plus) {
+    if (m_curTextPtr != m_textBody) {
+      handleEventEXE();
+    }
     dynHier = new Poincare::Addition();
   }
   else if (event == Ion::Events::Minus) {
+    if (m_curTextPtr != m_textBody) {
+      handleEventEXE();
+    }
     staticHier2 = new Poincare::Subtraction();
   }
   else if (event == Ion::Events::Multiplication) {
+    if (m_curTextPtr != m_textBody) {
+      handleEventEXE();
+    }
     dynHier = new Poincare::Multiplication();
   }
   else if (event == Ion::Events::Division) {
+    if (m_curTextPtr != m_textBody) {
+      handleEventEXE();
+    }
     staticHier2 = new Poincare::Division();
   }
 
