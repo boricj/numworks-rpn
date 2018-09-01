@@ -31,12 +31,16 @@ App::Descriptor * App::Snapshot::descriptor() {
   return &descriptor;
 }
 
+RpnStack * App::Snapshot::rpnStack() {
+  return &m_rpnStack;
+}
+
 void App::Snapshot::reset() {
 }
 
 App::App(Container * container, Snapshot * snapshot) :
   ::App(container, snapshot, &m_rpnPromptController),
-  m_rpnPromptController(this)
+  m_rpnPromptController(this, snapshot->rpnStack())
 {
 }
 

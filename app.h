@@ -3,6 +3,7 @@
 
 #include <escher.h>
 #include "rpn_prompt_controller.h"
+#include "rpn_stack.h"
 
 namespace Rpn {
 
@@ -20,6 +21,9 @@ public:
     App * unpack(Container * container) override;
     void reset() override;
     Descriptor * descriptor() override;
+    RpnStack * rpnStack();
+  private:
+    RpnStack m_rpnStack;
   };
 private:
   App(Container * container, Snapshot * snapshot);
