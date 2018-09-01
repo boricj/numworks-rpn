@@ -2,6 +2,7 @@
 #define RPN_STACK_H
 
 #include "poincare.h"
+#include <stddef.h>
 
 namespace Rpn {
 
