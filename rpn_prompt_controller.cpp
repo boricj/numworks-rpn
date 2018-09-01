@@ -86,6 +86,36 @@ bool RpnPromptController::handleEvent(Ion::Events::Event event) {
     handleEventEXE();
     handled = true;
   }
+  else if (event == Ion::Events::LeftParenthesis) {
+    m_rpnStack->rot();
+    m_view.mainView()->reloadData(false);
+    handled = true;
+  }
+  else if (event == Ion::Events::RightParenthesis) {
+    m_rpnStack->swap();
+    m_view.mainView()->reloadData(false);
+    handled = true;
+  }
+  else if (event == Ion::Events::Ans) {
+    m_rpnStack->over();
+    m_view.mainView()->reloadData(false);
+    handled = true;
+  }
+  else if (event == Ion::Events::Pi) {
+    if (!m_rpnStack->full()) {
+      m_rpnStack->push("3.14159265358979323846");
+      m_view.mainView()->reloadData(false);
+      handled = true;
+    }
+  }
+  else if (event == Ion::Events::Exp) {
+    if (!m_rpnStack->full()) {
+      m_rpnStack->push("2.71828182845904523536");
+      m_view.mainView()->reloadData(false);
+      handled = true;
+    }
+    
+  }
   else if (handleDigit(event)) {
     handled = true;
   }
@@ -138,10 +168,13 @@ bool RpnPromptController::handleDigit(Ion::Events::Event event) {
     addCharacter = '9';
   }
   else if (event == Ion::Events::EE) {
-    addCharacter = '\x8d';
+    addCharacter = Ion::Charset::Exponent;
+  }
+  else if (event == Ion::Events::Imaginary) {
+    addCharacter = Ion::Charset::IComplex;
   }
 
-  if (addCharacter && (m_curTextPtr-m_textBody < k_bufferLength) && !m_rpnStack->isFull()) {
+  if (addCharacter && (m_curTextPtr-m_textBody < k_bufferLength)) {
     *m_curTextPtr++ = addCharacter;
     *m_curTextPtr = '\0';
     return true;
@@ -150,46 +183,91 @@ bool RpnPromptController::handleDigit(Ion::Events::Event event) {
   return false;
 }
 
+#define CHECK_INPUT() if (m_curTextPtr != m_textBody) { if (!handleEventEXE()) { return false; }}
+
 bool RpnPromptController::handleOperation(Ion::Events::Event event) {
   bool handled = false;
 
   Poincare::DynamicHierarchy * dynHier = nullptr;
+  Poincare::StaticHierarchy<1> * staticHier1 = nullptr;
   Poincare::StaticHierarchy<2> * staticHier2 = nullptr;
 
+  // Basic
   if (event == Ion::Events::Plus) {
-    if (m_curTextPtr != m_textBody) {
-      handleEventEXE();
-    }
+    CHECK_INPUT();
     dynHier = new Poincare::Addition();
   }
   else if (event == Ion::Events::Minus) {
-    if (m_curTextPtr != m_textBody) {
-      handleEventEXE();
-    }
+    CHECK_INPUT();
     staticHier2 = new Poincare::Subtraction();
   }
   else if (event == Ion::Events::Multiplication) {
-    if (m_curTextPtr != m_textBody) {
-      handleEventEXE();
-    }
+    CHECK_INPUT();
     dynHier = new Poincare::Multiplication();
   }
   else if (event == Ion::Events::Division) {
-    if (m_curTextPtr != m_textBody) {
-      handleEventEXE();
-    }
+    CHECK_INPUT();
     staticHier2 = new Poincare::Division();
+  }
+  // Trig
+  else if (event == Ion::Events::Sine) {
+    CHECK_INPUT();
+    staticHier1 = new Poincare::Sine();
+  }
+  else if (event == Ion::Events::Cosine) {
+    CHECK_INPUT();
+    staticHier1 = new Poincare::Cosine();
+  }
+  else if (event == Ion::Events::Tangent) {
+    CHECK_INPUT();
+    staticHier1 = new Poincare::Tangent();
+  }
+  else if (event == Ion::Events::Arcsine) {
+    CHECK_INPUT();
+    staticHier1 = new Poincare::ArcSine();
+  }
+  else if (event == Ion::Events::Arccosine) {
+    CHECK_INPUT();
+    staticHier1 = new Poincare::ArcCosine();
+  }
+  else if (event == Ion::Events::Arctangent) {
+    CHECK_INPUT();
+    staticHier1 = new Poincare::ArcTangent();
+  }
+  // log/exp
+  else if (event == Ion::Events::Log) {
+    CHECK_INPUT();
+    staticHier2 = new Poincare::Logarithm();
+  }
+  else if (event == Ion::Events::Ln) {
+    CHECK_INPUT();
+    staticHier1 = new Poincare::NaperianLogarithm();
+  }
+  // square/power
+  else if (event == Ion::Events::Sqrt) {
+    CHECK_INPUT();
+    staticHier1 = new Poincare::SquareRoot();
+  }
+  else if (event == Ion::Events::Power) {
+    CHECK_INPUT();
+    staticHier2 = new Poincare::Power();
+  }
+  else if (event == Ion::Events::Square) {
+    CHECK_INPUT();
+    if (!m_rpnStack->empty() && !m_rpnStack->full()) {
+      m_rpnStack->push("2");
+      staticHier2 = new Poincare::Power();
+    }
   }
 
   if (dynHier) {
-    m_rpnStack->doOperation(dynHier, ((Rpn::App*)app())->localContext());
-    dynHier = nullptr;
-    handled = true;
+    handled = m_rpnStack->doOperation(dynHier, ((Rpn::App*)app())->localContext());
+  }
+  else if (staticHier1) {
+    handled = m_rpnStack->doOperation(staticHier1, ((Rpn::App*)app())->localContext());
   }
   else if (staticHier2) {
-    m_rpnStack->doOperation(staticHier2, ((Rpn::App*)app())->localContext());
-    staticHier2 = nullptr;
-    handled = true;
+    handled = m_rpnStack->doOperation(staticHier2, ((Rpn::App*)app())->localContext());
   }
 
   if (handled) {
@@ -199,9 +277,9 @@ bool RpnPromptController::handleOperation(Ion::Events::Event event) {
   return handled;
 }
 
-void RpnPromptController::handleEventEXE() {
-  if (m_rpnStack->isFull()) {
-    return;
+bool RpnPromptController::handleEventEXE() {
+  if (m_rpnStack->full()) {
+    return false;
   }
 
   if (m_curTextPtr > m_textBody) {
@@ -209,11 +287,20 @@ void RpnPromptController::handleEventEXE() {
       *m_textBody = '\0';
       m_curTextPtr = m_textBody;
       m_view.mainView()->reloadData(false);
+      return true;
     }
     else {
       app()->displayWarning(I18n::Message::SyntaxError);
     }
   }
+  else {
+    if (!m_rpnStack->empty()) {
+      m_rpnStack->dup();
+      m_view.mainView()->reloadData(false);
+    }
+  }
+
+  return false;
 }
 
 }

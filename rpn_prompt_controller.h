@@ -38,7 +38,7 @@ public:
 
   bool handleDigit(Ion::Events::Event event);
   bool handleOperation(Ion::Events::Event event);
-  void handleEventEXE();
+  bool handleEventEXE();
 
   static constexpr int k_bufferLength = TextField::maxBufferSize();
   char m_textBody[k_bufferLength];

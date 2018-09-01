@@ -17,7 +17,45 @@ RpnStack::~RpnStack() {
   }
 }
 
+void RpnStack::dup() {
+  if (!empty() && !full()) { 
+    push((*this)[size()-1].clone());
+  }
+}
+
+void RpnStack::swap() {
+  if (size() >= 2) {
+    Poincare::Expression * a = (*this)[size()-1].clone();
+    Poincare::Expression * b = (*this)[size()-2].clone();
+    pop();
+    pop();
+    push(a);
+    push(b);
+  }
+}
+
+void RpnStack::rot() {
+  if (size() >= 3) {
+    Poincare::Expression * a = (*this)[size()-1].clone();
+    Poincare::Expression * b = (*this)[size()-2].clone();
+    Poincare::Expression * c = (*this)[size()-3].clone();
+    pop();
+    pop();
+    pop();
+    push(b);
+    push(a);
+    push(c);
+  }
+}
+
+void RpnStack::over() {
+  if ((size() >= 2) && !full()) {
+    push((*this)[size()-2].clone());
+  }
+}
+
 bool RpnStack::push(const char *text) {
+  assert(!full());
   Poincare::Expression * exp = Poincare::Expression::parse(text);
   if (exp == nullptr) {
     return false;
@@ -27,6 +65,7 @@ bool RpnStack::push(const char *text) {
 }
 
 void RpnStack::push(Poincare::Expression * exp) {
+  assert(!full());
   *m_curStackPtr++ = exp;
 }
 
@@ -46,6 +85,23 @@ bool RpnStack::doOperation(Poincare::DynamicHierarchy * exp, Poincare::Context &
   exp->addOperand((*this)[size()-2].clone());
   exp->addOperand((*this)[size()-1].clone());
   pop();
+  pop();
+
+  push(PoincareHelpers::Approximate<double>(exp, context));
+  delete exp;
+
+  return true;
+}
+
+bool RpnStack::doOperation(Poincare::StaticHierarchy<1> * exp, Poincare::Context &context) {
+  if (size() < 1) {
+    delete exp;
+    return false;
+  }
+
+  Poincare::ListData listData;
+  listData.pushExpression((*this)[size()-1].clone());
+  exp->setArgument(&listData, 2, true);
   pop();
 
   push(PoincareHelpers::Approximate<double>(exp, context));
