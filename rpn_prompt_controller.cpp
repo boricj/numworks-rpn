@@ -154,7 +154,7 @@ bool RpnPromptController::handleDigit(Ion::Events::Event event) {
   }
   else if (event == Ion::Events::Pi) {
     *m_textBody = '\0';
-    strcpy(m_textBody, "3.14159265358979323846");
+    strlcpy(m_textBody, "3.14159265358979323846", k_bufferLength);
     m_curTextPtr = m_textBody + strlen(m_textBody);
     return true;
   }
