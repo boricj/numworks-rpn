@@ -7,126 +7,104 @@ using namespace Shared;
 namespace Rpn {
 
 RpnStack::RpnStack() {
-  memset(m_stack, 0, sizeof(m_stack));
-  m_curStackPtr = m_stack;
+  for (int i = 0; i < k_stackSize; i++) {
+    m_stack[i] = new Poincare::Rational(0);
+  }
 }
 
 RpnStack::~RpnStack() {
-  while (!empty()) {
-    pop();
+  for (int i = 0; i < k_stackSize; i++) {
+    delete m_stack[i];
   }
 }
 
 void RpnStack::dup() {
-  if (!empty() && !full()) { 
-    push((*this)[size()-1].clone());
-  }
+  push((*this)[0].clone());
 }
 
 void RpnStack::swap() {
-  if (size() >= 2) {
-    Poincare::Expression * a = (*this)[size()-1].clone();
-    Poincare::Expression * b = (*this)[size()-2].clone();
-    pop();
-    pop();
-    push(a);
-    push(b);
-  }
+  Poincare::Expression * a = (*this)[0].clone();
+  Poincare::Expression * b = (*this)[1].clone();
+  pop();
+  pop();
+  push(a);
+  push(b);
 }
 
 void RpnStack::rot() {
-  if (size() >= 3) {
-    Poincare::Expression * a = (*this)[size()-1].clone();
-    Poincare::Expression * b = (*this)[size()-2].clone();
-    Poincare::Expression * c = (*this)[size()-3].clone();
-    pop();
-    pop();
-    pop();
-    push(b);
-    push(a);
-    push(c);
-  }
+  Poincare::Expression * a = (*this)[0].clone();
+  Poincare::Expression * b = (*this)[1].clone();
+  Poincare::Expression * c = (*this)[2].clone();
+  pop();
+  pop();
+  pop();
+  push(b);
+  push(a);
+  push(c);
 }
 
 void RpnStack::over() {
-  if ((size() >= 2) && !full()) {
-    push((*this)[size()-2].clone());
-  }
+  push((*this)[1].clone());
 }
 
 bool RpnStack::push(const char *text) {
-  assert(!full());
   Poincare::Expression * exp = Poincare::Expression::parse(text);
   if (exp == nullptr) {
     return false;
   }
-  *m_curStackPtr++ = exp;
+  push(exp);
   return true;
 }
 
 void RpnStack::push(Poincare::Expression * exp) {
-  assert(!full());
-  *m_curStackPtr++ = exp;
+  delete m_stack[k_stackSize-1];
+  for (int i = k_stackSize-1; i > 0; i--) {
+    m_stack[i] = m_stack[i-1];
+  }
+  m_stack[0] = exp;
 }
 
 void RpnStack::pop() {
-  assert(!empty());
-  --m_curStackPtr;
-  delete *m_curStackPtr;
-  *m_curStackPtr = nullptr;
+  delete m_stack[0];
+  for (int i = 0; i < k_stackSize-1; i++) {
+    m_stack[i] = m_stack[i+1];
+  }
+  m_stack[k_stackSize-1] = new Poincare::Rational(0);
 }
 
-bool RpnStack::doOperation(Poincare::DynamicHierarchy * exp, Poincare::Context &context) {
-  if (size() < 2) {
-    delete exp;
-    return false;
+void RpnStack::clear() {
+  for (int i = 0; i < RpnStack::k_stackSize; i++) {
+    this->pop();
   }
+}
 
-  exp->addOperand((*this)[size()-2].clone());
-  exp->addOperand((*this)[size()-1].clone());
+void RpnStack::doOperation(Poincare::DynamicHierarchy * exp, Poincare::Context &context) {
+  exp->addOperand((*this)[1].clone());
+  exp->addOperand((*this)[0].clone());
   pop();
   pop();
 
   push(PoincareHelpers::Approximate<double>(exp, context));
-  delete exp;
-
-  return true;
 }
 
-bool RpnStack::doOperation(Poincare::StaticHierarchy<1> * exp, Poincare::Context &context) {
-  if (size() < 1) {
-    delete exp;
-    return false;
-  }
-
+void RpnStack::doOperation(Poincare::StaticHierarchy<1> * exp, Poincare::Context &context) {
   Poincare::ListData listData;
-  listData.pushExpression((*this)[size()-1].clone());
+  listData.pushExpression((*this)[0].clone());
   exp->setArgument(&listData, 2, true);
   pop();
 
   push(PoincareHelpers::Approximate<double>(exp, context));
-  delete exp;
-
-  return true;
 }
 
-bool RpnStack::doOperation(Poincare::StaticHierarchy<2> * exp, Poincare::Context &context) {
-  if (size() < 2) {
-    delete exp;
-    return false;
-  }
-
+void RpnStack::doOperation(Poincare::StaticHierarchy<2> * exp, Poincare::Context &context) {
   Poincare::ListData listData;
-  listData.pushExpression((*this)[size()-2].clone());
-  listData.pushExpression((*this)[size()-1].clone());
+  listData.pushExpression((*this)[1].clone());
+  listData.pushExpression((*this)[0].clone());
   exp->setArgument(&listData, 2, true);
   pop();
   pop();
 
   push(PoincareHelpers::Approximate<double>(exp, context));
-  delete exp;
-
-  return true;
 }
 
 }

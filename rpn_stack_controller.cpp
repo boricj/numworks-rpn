@@ -21,13 +21,8 @@ void RpnStackController::willDisplayCellForIndex(HighlightCell * cell, int index
   EvenOddBufferTextCell *realCell = static_cast<EvenOddBufferTextCell *>(cell);
   realCell->setEven(index%2);
   realCell->setFontSize(KDText::FontSize::Large);
-  if ((size_t)index >= m_rpnStack->size()) {
-    realCell->setText("");
-  }
-  else {
-    (*m_rpnStack)[index].writeTextInBuffer(buffer, sizeof(buffer), Poincare::PrintFloat::Mode::Decimal);
-    realCell->setText(buffer);
-  }
+  (*m_rpnStack)[RpnStack::k_stackSize - index - 1].writeTextInBuffer(buffer, sizeof(buffer), Poincare::PrintFloat::Mode::Decimal);
+  realCell->setText(buffer);
   realCell->reloadCell();
 }
 

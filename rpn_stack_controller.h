@@ -12,7 +12,7 @@ public:
   RpnStackController(Responder * parentResponder, RpnStack * rpnStack, View * view);
   View * view() override;
 
-  int numberOfRows() override { return m_rpnStack->size(); }
+  int numberOfRows() override { return RpnStack::k_stackSize; }
   KDCoordinate rowHeight(int i) override { return 32; }
   HighlightCell * reusableCell(int index, int type) override { return &m_cells[index]; }
   int reusableCellCount(int type) { return 8; };
