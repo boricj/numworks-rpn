@@ -97,16 +97,6 @@ bool RpnPromptController::handleEvent(Ion::Events::Event event) {
     m_view.mainView()->reloadData(false);
     handled = true;
   }
-  else if (event == Ion::Events::Pi) {
-    m_rpnStack->push("3.14159265358979323846");
-    m_view.mainView()->reloadData(false);
-    handled = true;
-  }
-  else if (event == Ion::Events::Exp) {
-    m_rpnStack->push("2.71828182845904523536");
-    m_view.mainView()->reloadData(false);
-    handled = true;
-  }
   else if (handleDigit(event)) {
     handled = true;
   }
@@ -162,6 +152,12 @@ bool RpnPromptController::handleDigit(Ion::Events::Event event) {
   else if (event == Ion::Events::Imaginary) {
     addCharacter = Ion::Charset::IComplex;
   }
+  else if (event == Ion::Events::Pi) {
+    *m_textBody = '\0';
+    strcpy(m_textBody, "3.14159265358979323846");
+    m_curTextPtr = m_textBody + strlen(m_textBody);
+    return true;
+  }
 
   if (addCharacter && (m_curTextPtr-m_textBody < k_bufferLength)) {
     *m_curTextPtr++ = addCharacter;
@@ -173,7 +169,7 @@ bool RpnPromptController::handleDigit(Ion::Events::Event event) {
 }
 
 bool RpnPromptController::handleOperation(Ion::Events::Event event) {
-  bool handled = false;
+  bool handled = true;
 
   Poincare::DynamicHierarchy * dynHier = nullptr;
   Poincare::StaticHierarchy<1> * staticHier1 = nullptr;
@@ -212,9 +208,6 @@ bool RpnPromptController::handleOperation(Ion::Events::Event event) {
     staticHier1 = new Poincare::ArcTangent();
   }
   // log/exp
-  else if (event == Ion::Events::Log) {
-    staticHier2 = new Poincare::Logarithm();
-  }
   else if (event == Ion::Events::Ln) {
     staticHier1 = new Poincare::NaperianLogarithm();
   }
@@ -229,12 +222,14 @@ bool RpnPromptController::handleOperation(Ion::Events::Event event) {
     staticHier1 = new Poincare::Opposite();
   }
 
-  if (dynHier || staticHier1 || staticHier2) {
+  if (dynHier || staticHier1 || staticHier2 ||
+      event == Ion::Events::Log ||
+      event == Ion::Events::Exp ||
+      event == Ion::Events::Square) {
     if (m_curTextPtr > m_textBody) {
       if (m_rpnStack->push(m_textBody)) {
         *m_textBody = '\0';
         m_curTextPtr = m_textBody;
-        m_view.mainView()->reloadData(false);
       }
       else {
         app()->displayWarning(I18n::Message::SyntaxError);
@@ -248,15 +243,24 @@ bool RpnPromptController::handleOperation(Ion::Events::Event event) {
 
   if (dynHier) {
     m_rpnStack->doOperation(dynHier, ((Rpn::App*)app())->localContext());
-    handled = true;
   }
   else if (staticHier1) {
     m_rpnStack->doOperation(staticHier1, ((Rpn::App*)app())->localContext());
-    handled = true;
   }
   else if (staticHier2) {
     m_rpnStack->doOperation(staticHier2, ((Rpn::App*)app())->localContext());
-    handled = true;
+  }
+  else if (event == Ion::Events::Log) {
+    m_rpnStack->logTen(((Rpn::App*)app())->localContext());
+  }
+  else if (event == Ion::Events::Exp) {
+    m_rpnStack->exponentE(((Rpn::App*)app())->localContext());
+  }
+  else if (event == Ion::Events::Square) {
+    m_rpnStack->square(((Rpn::App*)app())->localContext());
+  }
+  else {
+    handled = false;
   }
 
   if (handled) {

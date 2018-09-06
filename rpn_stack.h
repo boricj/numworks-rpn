@@ -21,6 +21,10 @@ public:
   void pop();
   void clear();
 
+  void logTen(Poincare::Context &context);
+  void square(Poincare::Context &context);
+  void exponentE(Poincare::Context &context);
+
   void doOperation(Poincare::DynamicHierarchy * exp, Poincare::Context &context);
   void doOperation(Poincare::StaticHierarchy<1> * exp, Poincare::Context &context);
   void doOperation(Poincare::StaticHierarchy<2> * exp, Poincare::Context &context);
