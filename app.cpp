@@ -36,6 +36,7 @@ RpnStack * App::Snapshot::rpnStack() {
 }
 
 void App::Snapshot::reset() {
+  m_rpnStack.clear();
 }
 
 App::App(Container * container, Snapshot * snapshot) :
