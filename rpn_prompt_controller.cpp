@@ -225,6 +225,9 @@ bool RpnPromptController::handleOperation(Ion::Events::Event event) {
   else if (event == Ion::Events::Power) {
     staticHier2 = new Poincare::Power();
   }
+  else if (event == Ion::Events::Comma) {
+    staticHier1 = new Poincare::Opposite();
+  }
 
   if (dynHier || staticHier1 || staticHier2) {
     if (m_curTextPtr > m_textBody) {
