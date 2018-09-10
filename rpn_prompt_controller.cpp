@@ -5,10 +5,10 @@
 
 namespace Rpn {
 
-RpnPromptController::ContentView::ContentView(Responder * parentResponder, RpnStackController * stackController) :
+RpnPromptController::ContentView::ContentView(Responder * parentResponder, RpnStackController * stackController, TextFieldDelegate * delegate) :
   View(),
   m_mainView(stackController, stackController, stackController),
-  m_promptView(KDText::FontSize::Large, 1.0f, 0.5f)
+  m_promptView(parentResponder, m_textBuffer, m_textBuffer, sizeof(m_textBuffer), delegate, false, KDText::FontSize::Large)
 {
 }
 
@@ -39,10 +39,8 @@ void RpnPromptController::ContentView::reload() {
 
 RpnPromptController::RpnPromptController(Responder * parentResponder, RpnStack * rpnStack) :
   ViewController(parentResponder),
-  m_textBody(""),
-  m_curTextPtr(m_textBody),
   m_rpnStack(rpnStack),
-  m_view(parentResponder, &m_stackController),
+  m_view(parentResponder, &m_stackController, this),
   m_stackController(parentResponder, rpnStack, m_view.mainView())
 {
 }
@@ -52,128 +50,113 @@ View * RpnPromptController::view() {
 }
 
 void RpnPromptController::didBecomeFirstResponder() {
+  app()->setFirstResponder(m_view.promptView());
+}
+
+void RpnPromptController::viewWillAppear() {
+  m_view.promptView()->setEditing(true);
+  m_view.promptView()->setText("");
 }
 
 bool RpnPromptController::handleEvent(Ion::Events::Event event) {
-  bool handled = false;
-
-  if (event == Ion::Events::Backspace) {
-    if (m_curTextPtr > m_textBody) {
-      *--m_curTextPtr = '\0';
-    }
-    else {
-      m_rpnStack->pop();
-      m_view.mainView()->reloadData(false);
-    }
-    handled = true;
-  }
-  else if (event == Ion::Events::Clear) {
-    if (m_curTextPtr > m_textBody) {
-      *m_textBody = '\0';
-      m_curTextPtr = m_textBody;
-    }
-    else {
-      m_rpnStack->clear();
-      m_view.mainView()->reloadData(false);
-    }
-    handled = true;
-  }
-  else if (event == Ion::Events::EXE) {
-    handleEventEXE();
-    handled = true;
-  }
-  else if (event == Ion::Events::LeftParenthesis) {
-    m_rpnStack->rot();
-    m_view.mainView()->reloadData(false);
-    handled = true;
-  }
-  else if (event == Ion::Events::RightParenthesis) {
-    m_rpnStack->swap();
-    m_view.mainView()->reloadData(false);
-    handled = true;
-  }
-  else if (event == Ion::Events::Ans) {
-    m_rpnStack->over();
-    m_view.mainView()->reloadData(false);
-    handled = true;
-  }
-  else if (handleDigit(event)) {
-    handled = true;
-  }
-  else if (handleOperation(event)) {
-    handled = true;
-  }
-
-  if (handled) {
-    m_view.promptView()->setText(m_textBody);
-  }
-  return handled;
+  return false;
 }
 
-bool RpnPromptController::handleDigit(Ion::Events::Event event) {
-  char addCharacter = '\0';
+bool RpnPromptController::textFieldShouldFinishEditing(TextField * textField, Ion::Events::Event event) {
+  return event == Ion::Events::EXE;
+}
 
-  if (event == Ion::Events::Dot) {
-    addCharacter = '.';
-  }
-  else if (event == Ion::Events::Zero) {
-    addCharacter = '0';
-  }
-  else if (event == Ion::Events::One) {
-    addCharacter = '1';
-  }
-  else if (event == Ion::Events::Two) {
-    addCharacter = '2';
-  }
-  else if (event == Ion::Events::Three) {
-    addCharacter = '3';
-  }
-  else if (event == Ion::Events::Four) {
-    addCharacter = '4';
-  }
-  else if (event == Ion::Events::Five) {
-    addCharacter = '5';
-  }
-  else if (event == Ion::Events::Six) {
-    addCharacter = '6';
-  }
-  else if (event == Ion::Events::Seven) {
-    addCharacter = '7';
-  }
-  else if (event == Ion::Events::Eight) {
-    addCharacter = '8';
-  }
-  else if (event == Ion::Events::Nine) {
-    addCharacter = '9';
-  }
-  else if (event == Ion::Events::EE) {
-    addCharacter = Ion::Charset::Exponent;
-  }
-  else if (event == Ion::Events::Imaginary) {
-    addCharacter = Ion::Charset::IComplex;
-  }
-  else if (event == Ion::Events::Pi) {
-    *m_textBody = '\0';
-    strlcpy(m_textBody, "3.14159265358979323846", k_bufferLength);
-    m_curTextPtr = m_textBody + strlen(m_textBody);
+bool RpnPromptController::textFieldDidReceiveEvent(TextField * textField, Ion::Events::Event event) {
+  if (handleEventSpecial(event)) {
+    m_view.mainView()->reloadData(false);
     return true;
   }
-
-  if (addCharacter && (m_curTextPtr-m_textBody < k_bufferLength)) {
-    *m_curTextPtr++ = addCharacter;
-    *m_curTextPtr = '\0';
+  else if (handleEventOperation(event)) {
+    m_view.mainView()->reloadData(false);
     return true;
   }
 
   return false;
 }
 
-bool RpnPromptController::handleOperation(Ion::Events::Event event) {
-  bool handled = true;
+bool RpnPromptController::textFieldDidFinishEditing(TextField * textField, const char * text, Ion::Events::Event event) {
+  if (event == Ion::Events::EXE) {
+    if (pushInput()) {
+      m_view.mainView()->reloadData(false);
+      return true;
+    }
+    else {
+      return false;
+    }
+  }
+  return false;
+}
 
+bool RpnPromptController::textFieldDidAbortEditing(TextField * textField) {
+  //m_view.mainView()->selectCellAtLocation(m_view.mainView()->selectedColumn(), m_view.mainView()->selectedRow());
+  //app()->setFirstResponder(m_view.mainView());
+  return true;
+}
+
+bool RpnPromptController::textFieldDidHandleEvent(TextField * textField, bool returnValue, bool textHasChanged) {
+  return returnValue;
+}
+
+bool RpnPromptController::handleEventSpecial(Ion::Events::Event event) {
+  TextField *textField = m_view.promptView();
+  const char *text = textField->text();
+  bool handled = false;
+
+  if (event == Ion::Events::Clear) {
+    if (textField->isEditing() && *text) {
+      textField->setText("");
+      textField->setCursorLocation(0);
+    }
+    else {
+      m_rpnStack->clear();
+    }
+    handled = true;
+  }
+  else if (event == Ion::Events::Backspace && *text == '\0') {
+    m_rpnStack->pop();
+    handled = true;
+  }
+  else if (event == Ion::Events::EXE && *text == '\0') {
+    m_rpnStack->dup();
+    handled = true;
+  }
+  else if (event == Ion::Events::Ans) {
+    m_rpnStack->over();
+    handled = true;
+  }
+  else if (event == Ion::Events::RightParenthesis) {
+    m_rpnStack->swap();
+    handled = true;
+  }
+  else if (event == Ion::Events::LeftParenthesis) {
+    m_rpnStack->rot();
+    handled = true;
+  }
+
+  return handled;
+}
+
+bool RpnPromptController::handleEventOperation(Ion::Events::Event event) {
   Poincare::DynamicHierarchy * dynHier = nullptr;
   Poincare::StaticHierarchy<1> * staticHier1 = nullptr;
   Poincare::StaticHierarchy<2> * staticHier2 = nullptr;
+
+  if (!(event == Ion::Events::Plus || event == Ion::Events::Minus || event == Ion::Events::Multiplication || event == Ion::Events::Division || event == Ion::Events::Comma ||
+        event == Ion::Events::Sine || event == Ion::Events::Cosine || event == Ion::Events::Tangent ||
+        event == Ion::Events::Arcsine || event == Ion::Events::Arccosine || event == Ion::Events::Arctangent ||
+        event == Ion::Events::Ln || event == Ion::Events::Log || event == Ion::Events::Exp ||
+        event == Ion::Events::Sqrt || event == Ion::Events::Square || event == Ion::Events::Power)) {
+    return false;
+  }
+
+  if (!pushInput()) {
+    return false;
+  }
 
   // Basic
   if (event == Ion::Events::Plus) {
@@ -188,7 +171,10 @@ bool RpnPromptController::handleOperation(Ion::Events::Event event) {
   else if (event == Ion::Events::Division) {
     staticHier2 = new Poincare::Division();
   }
-  // Trig
+  else if (event == Ion::Events::Comma) {
+    staticHier1 = new Poincare::Opposite();
+  }
+  // Trigonometry
   else if (event == Ion::Events::Sine) {
     staticHier1 = new Poincare::Sine();
   }
@@ -207,38 +193,29 @@ bool RpnPromptController::handleOperation(Ion::Events::Event event) {
   else if (event == Ion::Events::Arctangent) {
     staticHier1 = new Poincare::ArcTangent();
   }
-  // log/exp
+  // Logarithms
   else if (event == Ion::Events::Ln) {
     staticHier1 = new Poincare::NaperianLogarithm();
   }
-  // square/power
+  else if (event == Ion::Events::Log) {
+    m_rpnStack->push(new Poincare::Rational(10));
+    staticHier2 = new Poincare::Logarithm();
+  }
+  else if (event == Ion::Events::Exp) {
+    m_rpnStack->push(new Poincare::Symbol(Ion::Charset::Exponential));
+    m_rpnStack->swap();
+    staticHier2 = new Poincare::Power();
+  }
+  // Square/Power
   else if (event == Ion::Events::Sqrt) {
     staticHier1 = new Poincare::SquareRoot();
   }
-  else if (event == Ion::Events::Power) {
+  else if (event == Ion::Events::Square) {
+    m_rpnStack->push(new Poincare::Rational(2));
     staticHier2 = new Poincare::Power();
   }
-  else if (event == Ion::Events::Comma) {
-    staticHier1 = new Poincare::Opposite();
-  }
-
-  if (dynHier || staticHier1 || staticHier2 ||
-      event == Ion::Events::Log ||
-      event == Ion::Events::Exp ||
-      event == Ion::Events::Square) {
-    if (m_curTextPtr > m_textBody) {
-      if (m_rpnStack->push(m_textBody)) {
-        *m_textBody = '\0';
-        m_curTextPtr = m_textBody;
-      }
-      else {
-        app()->displayWarning(I18n::Message::SyntaxError);
-        delete dynHier; dynHier = nullptr;
-        delete staticHier1; staticHier1 = nullptr;
-        delete staticHier2; staticHier2 = nullptr;
-        return true;
-      }
-    }
+  else if (event == Ion::Events::Power) {
+    staticHier2 = new Poincare::Power();
   }
 
   if (dynHier) {
@@ -250,43 +227,30 @@ bool RpnPromptController::handleOperation(Ion::Events::Event event) {
   else if (staticHier2) {
     m_rpnStack->doOperation(staticHier2, ((Rpn::App*)app())->localContext());
   }
-  else if (event == Ion::Events::Log) {
-    m_rpnStack->logTen(((Rpn::App*)app())->localContext());
-  }
-  else if (event == Ion::Events::Exp) {
-    m_rpnStack->exponentE(((Rpn::App*)app())->localContext());
-  }
-  else if (event == Ion::Events::Square) {
-    m_rpnStack->square(((Rpn::App*)app())->localContext());
-  }
   else {
-    handled = false;
-  }
-
-  if (handled) {
-    m_view.mainView()->reloadData(false);
-  }
-
-  return handled;
-}
-
-bool RpnPromptController::handleEventEXE() {
-  if (m_curTextPtr > m_textBody) {
-    if (m_rpnStack->push(m_textBody)) {
-      *m_textBody = '\0';
-      m_curTextPtr = m_textBody;
-      m_view.mainView()->reloadData(false);
-    }
-    else {
-      app()->displayWarning(I18n::Message::SyntaxError);
-    }
-  }
-  else {
-    m_rpnStack->dup();
-    m_view.mainView()->reloadData(false);
+    return false;
   }
 
   return true;
+}
+
+bool RpnPromptController::pushInput() {
+  TextField *textField = m_view.promptView();
+  const char *text = textField->text();
+
+  if (*text == '\0') {
+    return true;
+  }
+
+  if (m_rpnStack->push(text)) {
+    textField->setText("");
+    textField->setCursorLocation(0);
+    return true;
+  }
+  else {
+    app()->displayWarning(I18n::Message::SyntaxError);
+    return false;
+  }
 }
 
 }

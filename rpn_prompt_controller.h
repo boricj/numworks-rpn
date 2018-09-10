@@ -3,22 +3,37 @@
 
 #include <escher.h>
 
+#include "../shared/text_field_delegate.h"
 #include "rpn_stack_controller.h"
 #include "rpn_stack.h"
 
 namespace Rpn {
 
-class RpnPromptController : public ViewController {
+class RpnPromptController : public ViewController, public Shared::TextFieldDelegate {
 public:
   RpnPromptController(Responder * parentResponder, RpnStack * rpnStack);
   View * view() override;
   bool handleEvent(Ion::Events::Event event) override;
   void didBecomeFirstResponder() override;
+  void viewWillAppear() override;
 
+  /* TextFieldDelegate */
+  bool textFieldShouldFinishEditing(TextField * textField, Ion::Events::Event event) override;
+  bool textFieldDidReceiveEvent(TextField * textField, Ion::Events::Event event) override;
+  bool textFieldDidFinishEditing(TextField * textField, const char * text, Ion::Events::Event event) override;
+  bool textFieldDidAbortEditing(TextField * textField) override;
+  bool textFieldDidHandleEvent(TextField * textField, bool returnValue, bool textHasChanged) override;
+  Toolbox * toolboxForTextInput(TextInput * textInput) override { return nullptr; }
+
+  bool pushInput();
+
+Shared::TextFieldDelegateApp * textFieldDelegateApp() override {
+  return (Shared::TextFieldDelegateApp *)app();
+}
 public:
   class ContentView : public View {
   public:
-    ContentView(Responder * parentResponder, RpnStackController * stackController);
+    ContentView(Responder * parentResponder, RpnStackController * stackController, TextFieldDelegate * delegate);
     ~ContentView();
     ContentView(const ContentView& other) = delete;
     ContentView(ContentView&& other) = delete;
@@ -26,23 +41,21 @@ public:
     ContentView& operator=(ContentView&& other) = delete;
     void reload();
     SelectableTableView * mainView() { return &m_mainView; }
-    BufferTextView * promptView() { return &m_promptView; }
+    TextField * promptView() { return &m_promptView; }
     /* View */
     int numberOfSubviews() const override { return 2; }
     View * subviewAtIndex(int index) override;
     void layoutSubviews() override;
+    
   private:
     SelectableTableView m_mainView;
-    BufferTextView m_promptView;
+    TextField m_promptView;
+    char m_textBuffer[TextField::maxBufferSize()];
   };
 
-  bool handleDigit(Ion::Events::Event event);
-  bool handleOperation(Ion::Events::Event event);
-  bool handleEventEXE();
+  bool handleEventOperation(Ion::Events::Event event);
+  bool handleEventSpecial(Ion::Events::Event event);
 
-  static constexpr int k_bufferLength = TextField::maxBufferSize();
-  char m_textBody[k_bufferLength];
-  char *m_curTextPtr;
   RpnStack *m_rpnStack;
   ContentView m_view;
   RpnStackController m_stackController;

@@ -40,13 +40,10 @@ void App::Snapshot::reset() {
 }
 
 App::App(Container * container, Snapshot * snapshot) :
-  ::App(container, snapshot, &m_rpnPromptController),
+  Shared::TextFieldDelegateApp(container, snapshot, &m_rpnPromptController),
   m_rpnPromptController(this, snapshot->rpnStack())
 {
 }
 
-Poincare::Context & App::localContext() {
-  return *((AppsContainer*)container())->globalContext();
-}
 
 }

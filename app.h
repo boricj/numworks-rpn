@@ -2,12 +2,13 @@
 #define RPN_APP_H
 
 #include <escher.h>
+#include "../shared/text_field_delegate_app.h"
 #include "rpn_prompt_controller.h"
 #include "rpn_stack.h"
 
 namespace Rpn {
 
-class App : public ::App {
+class App : public Shared::TextFieldDelegateApp {
 public:
   class Descriptor : public ::App::Descriptor {
   public:
@@ -25,7 +26,6 @@ public:
   private:
     RpnStack m_rpnStack;
   };
-  Poincare::Context & localContext();
 private:
   App(Container * container, Snapshot * snapshot);
   RpnPromptController m_rpnPromptController;

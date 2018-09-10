@@ -79,27 +79,27 @@ void RpnStack::clear() {
   }
 }
 
-void RpnStack::doOperation(Poincare::DynamicHierarchy * exp, Poincare::Context &context) {
+void RpnStack::doOperation(Poincare::DynamicHierarchy * exp, Poincare::Context *context) {
   exp->addOperand((*this)[1].clone());
   exp->addOperand((*this)[0].clone());
   pop();
   pop();
 
-  push(PoincareHelpers::Approximate<double>(exp, context));
+  push(PoincareHelpers::Approximate<double>(exp, *context));
   delete exp;
 }
 
-void RpnStack::doOperation(Poincare::StaticHierarchy<1> * exp, Poincare::Context &context) {
+void RpnStack::doOperation(Poincare::StaticHierarchy<1> * exp, Poincare::Context *context) {
   Poincare::ListData listData;
   listData.pushExpression((*this)[0].clone());
   exp->setArgument(&listData, 2, true);
   pop();
 
-  push(PoincareHelpers::Approximate<double>(exp, context));
+  push(PoincareHelpers::Approximate<double>(exp, *context));
   delete exp;
 }
 
-void RpnStack::doOperation(Poincare::StaticHierarchy<2> * exp, Poincare::Context &context) {
+void RpnStack::doOperation(Poincare::StaticHierarchy<2> * exp, Poincare::Context *context) {
   Poincare::ListData listData;
   listData.pushExpression((*this)[1].clone());
   listData.pushExpression((*this)[0].clone());
@@ -107,38 +107,8 @@ void RpnStack::doOperation(Poincare::StaticHierarchy<2> * exp, Poincare::Context
   pop();
   pop();
 
-  push(PoincareHelpers::Approximate<double>(exp, context));
+  push(PoincareHelpers::Approximate<double>(exp, *context));
   delete exp;
-}
-
-void RpnStack::logTen(Poincare::Context &context) {
-  Poincare::Logarithm logExp;
-  Poincare::ListData listData;
-  listData.pushExpression((*this)[0].clone());
-  listData.pushExpression(new Poincare::Rational(10));
-  logExp.setArgument(&listData, 2, true);
-  pop();
-  push(PoincareHelpers::Approximate<double>(&logExp, context));
-}
-
-void RpnStack::square(Poincare::Context &context) {
-  Poincare::Power powerExp;
-  Poincare::ListData listData;
-  listData.pushExpression((*this)[0].clone());
-  listData.pushExpression(new Poincare::Rational(2));
-  powerExp.setArgument(&listData, 2, true);
-  pop();
-  push(PoincareHelpers::Approximate<double>(&powerExp, context));
-}
-
-void RpnStack::exponentE(Poincare::Context &context) {
-  Poincare::Power powerExp;
-  Poincare::ListData listData;
-  listData.pushExpression(new Poincare::Symbol(Ion::Charset::Exponential));
-  listData.pushExpression((*this)[0].clone());
-  powerExp.setArgument(&listData, 2, true);
-  pop();
-  push(PoincareHelpers::Approximate<double>(&powerExp, context));
 }
 
 }
