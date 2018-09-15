@@ -1,3 +1,4 @@
 *.d
 *.o
-
+rpn_icon.cpp
+rpn_icon.h
