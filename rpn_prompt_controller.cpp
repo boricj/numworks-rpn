@@ -31,6 +31,7 @@ void RpnPromptController::ContentView::layoutSubviews() {
   m_mainView.setFrame(mainViewFrame);
   KDRect inputViewFrame(0, bounds().height() - inputViewFrameHeight, bounds().width(), inputViewFrameHeight);
   m_promptView.setFrame(inputViewFrame);
+  m_promptView.setLeftMargin(4);
 }
 
 void RpnPromptController::ContentView::reload() {
