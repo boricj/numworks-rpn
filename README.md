@@ -19,4 +19,4 @@ make EPSILON_APPS='rpn graph code statistics probability solver calculation sequ
 - Ans: `OVER`
 - Right parenthesis: `SWAP`
 - Left parenthesis: `ROT`
-- Comma: Opposite
+- Space (alpha+'-'): Opposite

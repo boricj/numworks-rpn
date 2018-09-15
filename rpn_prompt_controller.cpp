@@ -159,7 +159,7 @@ bool RpnPromptController::handleEventOperation(Ion::Events::Event event) {
   Poincare::StaticHierarchy<1> * staticHier1 = nullptr;
   Poincare::StaticHierarchy<2> * staticHier2 = nullptr;
 
-  if (!(event == Ion::Events::Plus || event == Ion::Events::Minus || event == Ion::Events::Multiplication || event == Ion::Events::Division || event == Ion::Events::Comma ||
+  if (!(event == Ion::Events::Plus || event == Ion::Events::Minus || event == Ion::Events::Multiplication || event == Ion::Events::Division || event == Ion::Events::Space ||
         event == Ion::Events::Sine || event == Ion::Events::Cosine || event == Ion::Events::Tangent ||
         event == Ion::Events::Arcsine || event == Ion::Events::Arccosine || event == Ion::Events::Arctangent ||
         event == Ion::Events::Ln || event == Ion::Events::Log || event == Ion::Events::Exp ||
@@ -184,7 +184,7 @@ bool RpnPromptController::handleEventOperation(Ion::Events::Event event) {
   else if (event == Ion::Events::Division) {
     staticHier2 = new Poincare::Division();
   }
-  else if (event == Ion::Events::Comma) {
+  else if (event == Ion::Events::Space) {
     staticHier1 = new Poincare::Opposite();
   }
   // Trigonometry
