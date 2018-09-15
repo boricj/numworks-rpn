@@ -26,7 +26,7 @@ public:
   void doOperation(Poincare::StaticHierarchy<1> * exp, Poincare::Context *context);
   void doOperation(Poincare::StaticHierarchy<2> * exp, Poincare::Context *context);
 
-  static constexpr int k_stackSize = 5;
+  static constexpr int k_stackSize = 16;
 private:
   Poincare::Expression * m_stack[k_stackSize];
 };

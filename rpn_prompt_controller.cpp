@@ -8,7 +8,8 @@ namespace Rpn {
 RpnPromptController::ContentView::ContentView(Responder * parentResponder, RpnStackController * stackController, TextFieldDelegate * delegate) :
   View(),
   m_mainView(stackController, stackController, stackController),
-  m_promptView(parentResponder, m_textBuffer, m_textBuffer, sizeof(m_textBuffer), delegate, false, KDText::FontSize::Large)
+  m_promptView(parentResponder, m_textBuffer, m_textBuffer, sizeof(m_textBuffer), delegate, false, KDText::FontSize::Large),
+  m_textBuffer("")
 {
 }
 
@@ -41,7 +42,7 @@ RpnPromptController::RpnPromptController(Responder * parentResponder, RpnStack *
   ViewController(parentResponder),
   m_rpnStack(rpnStack),
   m_view(parentResponder, &m_stackController, this),
-  m_stackController(parentResponder, rpnStack, m_view.mainView())
+  m_stackController(parentResponder, rpnStack, m_view.mainView(), this)
 {
 }
 
@@ -51,6 +52,13 @@ View * RpnPromptController::view() {
 
 void RpnPromptController::didBecomeFirstResponder() {
   app()->setFirstResponder(m_view.promptView());
+  m_view.promptView()->setEditing(true, false);
+  m_view.mainView()->scrollToCell(0, RpnStack::k_stackSize-1);
+  m_view.mainView()->deselectTable();
+}
+
+void RpnPromptController::willResignFirstResponder() {
+  m_view.promptView()->setEditing(false, false);
 }
 
 void RpnPromptController::viewWillAppear() {
@@ -63,7 +71,7 @@ bool RpnPromptController::handleEvent(Ion::Events::Event event) {
 }
 
 bool RpnPromptController::textFieldShouldFinishEditing(TextField * textField, Ion::Events::Event event) {
-  return event == Ion::Events::EXE;
+  return event == Ion::Events::EXE || event == Ion::Events::OK || event == Ion::Events::Up;
 }
 
 bool RpnPromptController::textFieldDidReceiveEvent(TextField * textField, Ion::Events::Event event) {
@@ -80,21 +88,25 @@ bool RpnPromptController::textFieldDidReceiveEvent(TextField * textField, Ion::E
 }
 
 bool RpnPromptController::textFieldDidFinishEditing(TextField * textField, const char * text, Ion::Events::Event event) {
-  if (event == Ion::Events::EXE) {
+  if (event == Ion::Events::EXE || event == Ion::Events::OK) {
     if (pushInput()) {
       m_view.mainView()->reloadData(false);
-      return true;
+      return false;
     }
     else {
       return false;
     }
   }
+  else if (event == Ion::Events::Up) {
+    m_view.mainView()->selectCellAtLocation(0, RpnStack::k_stackSize-1);
+    app()->setFirstResponder(m_view.mainView());
+  }
   return false;
 }
 
 bool RpnPromptController::textFieldDidAbortEditing(TextField * textField) {
-  //m_view.mainView()->selectCellAtLocation(m_view.mainView()->selectedColumn(), m_view.mainView()->selectedRow());
-  //app()->setFirstResponder(m_view.mainView());
+  m_view.mainView()->selectCellAtLocation(0, RpnStack::k_stackSize-1);
+  app()->setFirstResponder(m_view.mainView());
   return true;
 }
 
@@ -251,6 +263,12 @@ bool RpnPromptController::pushInput() {
     app()->displayWarning(I18n::Message::SyntaxError);
     return false;
   }
+}
+
+void RpnPromptController::setText(const char *text) {
+  TextField *textField = m_view.promptView();
+  textField->setEditing(true);
+  textField->setText(text);
 }
 
 }

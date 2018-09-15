@@ -15,6 +15,7 @@ public:
   View * view() override;
   bool handleEvent(Ion::Events::Event event) override;
   void didBecomeFirstResponder() override;
+  void willResignFirstResponder() override;
   void viewWillAppear() override;
 
   /* TextFieldDelegate */
@@ -26,6 +27,7 @@ public:
   Toolbox * toolboxForTextInput(TextInput * textInput) override { return nullptr; }
 
   bool pushInput();
+  void setText(const char *text);
 
 Shared::TextFieldDelegateApp * textFieldDelegateApp() override {
   return (Shared::TextFieldDelegateApp *)app();

@@ -6,11 +6,14 @@
 #include "rpn_stack.h"
 
 namespace Rpn {
+  class RpnPromptController;
 
 class RpnStackController : public ViewController, public ListViewDataSource, public SelectableTableViewDataSource {
 public:
-  RpnStackController(Responder * parentResponder, RpnStack * rpnStack, View * view);
+  RpnStackController(Responder * parentResponder, RpnStack * rpnStack, View * view, RpnPromptController * promptController);
   View * view() override;
+
+  bool handleEvent(Ion::Events::Event event) override;
 
   int numberOfRows() override { return RpnStack::k_stackSize; }
   KDCoordinate rowHeight(int i) override { return 32; }
@@ -22,6 +25,7 @@ public:
 private:
   RpnStack * m_rpnStack;
   View * m_view;
+  RpnPromptController * m_promptController;
   EvenOddBufferTextCell m_cells[8];
 };
 
