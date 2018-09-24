@@ -63,6 +63,7 @@ void RpnStack::push(Poincare::Expression * exp) {
     m_stack[i] = m_stack[i-1];
   }
   m_stack[0] = exp;
+  m_length += m_length < k_stackSize ? 1 : 0;
 }
 
 void RpnStack::pop() {
@@ -71,6 +72,7 @@ void RpnStack::pop() {
     m_stack[i] = m_stack[i+1];
   }
   m_stack[k_stackSize-1] = new Poincare::Rational(0);
+  m_length -= m_length > 0 ? 1 : 0;
 }
 
 void RpnStack::clear() {

@@ -24,7 +24,7 @@ bool RpnStackController::handleEvent(Ion::Events::Event event) {
   }
   else if (event == Ion::Events::EXE || event == Ion::Events::OK) {
     char buffer[256];
-    (*m_rpnStack)[RpnStack::k_stackSize - selectedRow() - 1].writeTextInBuffer(buffer, sizeof(buffer), Poincare::PrintFloat::Mode::Decimal);
+    (*m_rpnStack)[m_rpnStack->length() - selectedRow() - 1].writeTextInBuffer(buffer, sizeof(buffer), Poincare::PrintFloat::Mode::Decimal);
     m_promptController->setText(buffer);
     app()->setFirstResponder(m_promptController);
     return true;
@@ -39,7 +39,7 @@ void RpnStackController::willDisplayCellForIndex(HighlightCell * cell, int index
   EvenOddBufferTextCell *realCell = static_cast<EvenOddBufferTextCell *>(cell);
   realCell->setEven(index%2);
   realCell->setFontSize(KDText::FontSize::Large);
-  (*m_rpnStack)[RpnStack::k_stackSize - index - 1].writeTextInBuffer(buffer, sizeof(buffer), Poincare::PrintFloat::Mode::Decimal);
+  (*m_rpnStack)[m_rpnStack->length() - index - 1].writeTextInBuffer(buffer, sizeof(buffer), Poincare::PrintFloat::Mode::Decimal);
   realCell->setText(buffer);
   realCell->reloadCell();
 }

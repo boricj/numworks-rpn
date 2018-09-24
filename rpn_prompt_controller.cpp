@@ -54,7 +54,7 @@ View * RpnPromptController::view() {
 void RpnPromptController::didBecomeFirstResponder() {
   app()->setFirstResponder(m_view.promptView());
   m_view.promptView()->setEditing(true, false);
-  m_view.mainView()->scrollToCell(0, RpnStack::k_stackSize-1);
+  m_view.mainView()->scrollToCell(0, m_rpnStack->length()-1);
   m_view.mainView()->deselectTable();
 }
 
@@ -78,10 +78,12 @@ bool RpnPromptController::textFieldShouldFinishEditing(TextField * textField, Io
 bool RpnPromptController::textFieldDidReceiveEvent(TextField * textField, Ion::Events::Event event) {
   if (handleEventSpecial(event)) {
     m_view.mainView()->reloadData(false);
+    m_view.mainView()->scrollToCell(0, m_rpnStack->length()-1);
     return true;
   }
   else if (handleEventOperation(event)) {
     m_view.mainView()->reloadData(false);
+    m_view.mainView()->scrollToCell(0, m_rpnStack->length()-1);
     return true;
   }
 
@@ -92,21 +94,22 @@ bool RpnPromptController::textFieldDidFinishEditing(TextField * textField, const
   if (event == Ion::Events::EXE || event == Ion::Events::OK) {
     if (pushInput()) {
       m_view.mainView()->reloadData(false);
+      m_view.mainView()->scrollToCell(0, m_rpnStack->length()-1);
       return false;
     }
     else {
       return false;
     }
   }
-  else if (event == Ion::Events::Up) {
-    m_view.mainView()->selectCellAtLocation(0, RpnStack::k_stackSize-1);
+  else if (event == Ion::Events::Up && m_rpnStack->length()) {
+    m_view.mainView()->selectCellAtLocation(0, m_rpnStack->length() - 1);
     app()->setFirstResponder(m_view.mainView());
   }
   return false;
 }
 
 bool RpnPromptController::textFieldDidAbortEditing(TextField * textField) {
-  m_view.mainView()->selectCellAtLocation(0, RpnStack::k_stackSize-1);
+  m_view.mainView()->selectCellAtLocation(0, m_rpnStack->length() - 1);
   app()->setFirstResponder(m_view.mainView());
   return true;
 }
