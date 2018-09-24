@@ -235,13 +235,13 @@ bool RpnPromptController::handleEventOperation(Ion::Events::Event event) {
   }
 
   if (dynHier) {
-    m_rpnStack->doOperation(dynHier, ((Rpn::App*)app())->localContext());
+    m_rpnStack->doOperation(dynHier);
   }
   else if (staticHier1) {
-    m_rpnStack->doOperation(staticHier1, ((Rpn::App*)app())->localContext());
+    m_rpnStack->doOperation(staticHier1);
   }
   else if (staticHier2) {
-    m_rpnStack->doOperation(staticHier2, ((Rpn::App*)app())->localContext());
+    m_rpnStack->doOperation(staticHier2);
   }
   else {
     return false;

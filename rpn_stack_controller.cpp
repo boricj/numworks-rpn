@@ -1,6 +1,9 @@
+
 #include "rpn_stack_controller.h"
+#include "app.h"
 #include "rpn_prompt_controller.h"
 #include "../i18n.h"
+#include "../shared/poincare_helpers.h"
 #include <assert.h>
 
 namespace Rpn {
@@ -39,7 +42,9 @@ void RpnStackController::willDisplayCellForIndex(HighlightCell * cell, int index
   EvenOddBufferTextCell *realCell = static_cast<EvenOddBufferTextCell *>(cell);
   realCell->setEven(index%2);
   realCell->setFontSize(KDText::FontSize::Large);
-  (*m_rpnStack)[m_rpnStack->length() - index - 1].writeTextInBuffer(buffer, sizeof(buffer), Poincare::PrintFloat::Mode::Decimal);
+  Poincare::Expression *e = Shared::PoincareHelpers::Approximate<double>(&((*m_rpnStack)[m_rpnStack->length() - index - 1]), *((Rpn::App*)app())->localContext());
+  e->writeTextInBuffer(buffer, sizeof(buffer), Poincare::PrintFloat::Mode::Decimal);
+  delete e;
   realCell->setText(buffer);
   realCell->reloadCell();
 }
