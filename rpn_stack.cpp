@@ -1,9 +1,7 @@
 #include "rpn_stack.h"
-#include "../shared/poincare_helpers.h"
+#include "../../poincare/include/poincare_layouts.h"
 #include "ion/charset.h"
 #include <string.h>
-
-using namespace Shared;
 
 namespace Rpn {
 
