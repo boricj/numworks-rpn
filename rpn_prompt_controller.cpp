@@ -164,81 +164,119 @@ bool RpnPromptController::handleEventOperation(Ion::Events::Event event) {
   if (!pushInput())
     return false;
 
-  if (!m_rpnStack->length()) {
+  if (!m_rpnStack->length())
     return false;
-
 
   /* binary */
 
-  } else if (event == Ion::Events::Plus) {
+  if (event == Ion::Events::Plus) {
     if (m_rpnStack->length() < 2) return false;
-    m_rpnStack->push(new Addition(m_rpnStack->pop(), m_rpnStack->pop()));
+    Expression *e = new Addition((*m_rpnStack)[1].clone(), (*m_rpnStack)[0].clone());
+    m_rpnStack->pop();
+    m_rpnStack->pop();
+    m_rpnStack->push(e);
 
   } else if (event == Ion::Events::Minus) {
     if (m_rpnStack->length() < 2) return false;
-    m_rpnStack->push(new Subtraction(m_rpnStack->pop(), m_rpnStack->pop()));
+    Expression *e = new Subtraction((*m_rpnStack)[1].clone(), (*m_rpnStack)[0].clone());
+    m_rpnStack->pop();
+    m_rpnStack->pop();
+    m_rpnStack->push(e);
 
   } else if (event == Ion::Events::Multiplication) {
     if (m_rpnStack->length() < 2) return false;
-    m_rpnStack->push(new Multiplication(m_rpnStack->pop(), m_rpnStack->pop()));
+    Expression *e = new Multiplication((*m_rpnStack)[1].clone(), (*m_rpnStack)[0].clone());
+    m_rpnStack->pop();
+    m_rpnStack->pop();
+    m_rpnStack->push(e);
 
   } else if (event == Ion::Events::Division) {
     if (m_rpnStack->length() < 2) return false;
-    m_rpnStack->push(new Division(m_rpnStack->pop(), m_rpnStack->pop()));
+    Expression *e = new Division((*m_rpnStack)[1].clone(), (*m_rpnStack)[0].clone());
+    m_rpnStack->pop();
+    m_rpnStack->pop();
+    m_rpnStack->push(e);
 
   } else if (event == Ion::Events::Power) {
     if (m_rpnStack->length() < 2) return false;
-    m_rpnStack->push(new Power(m_rpnStack->pop(), m_rpnStack->pop()));
+    Expression *e = new Power((*m_rpnStack)[1].clone(), (*m_rpnStack)[0].clone());
+    m_rpnStack->pop();
+    m_rpnStack->pop();
+    m_rpnStack->push(e);
 
   /* unary */
 
   } else if (event == Ion::Events::Space) {
     if (m_rpnStack->length() < 1) return false;
-    m_rpnStack->push(new Opposite(m_rpnStack->pop()));
+    Expression *e = new Opposite((*m_rpnStack)[0].clone());
+    m_rpnStack->pop();
+    m_rpnStack->push(e);
 
   } else if (event == Ion::Events::Sine) {
     if (m_rpnStack->length() < 1) return false;
-    m_rpnStack->push(new Sine(m_rpnStack->pop()));
+    Expression *e = new Sine((*m_rpnStack)[0].clone());
+    m_rpnStack->pop();
+    m_rpnStack->push(e);
 
   } else if (event == Ion::Events::Cosine) {
     if (m_rpnStack->length() < 1) return false;
-    m_rpnStack->push(new Cosine(m_rpnStack->pop()));
+    Expression *e = new Cosine((*m_rpnStack)[0].clone());
+    m_rpnStack->pop();
+    m_rpnStack->push(e);
 
   } else if (event == Ion::Events::Tangent) {
     if (m_rpnStack->length() < 1) return false;
-    m_rpnStack->push(new Tangent(m_rpnStack->pop()));
+    Expression *e = new Tangent((*m_rpnStack)[0].clone());
+    m_rpnStack->pop();
+    m_rpnStack->push(e);
 
   } else if (event == Ion::Events::Arcsine) {
     if (m_rpnStack->length() < 1) return false;
-    m_rpnStack->push(new ArcSine(m_rpnStack->pop()));
+    Expression *e = new ArcSine((*m_rpnStack)[0].clone());
+    m_rpnStack->pop();
+    m_rpnStack->push(e);
 
   } else if (event == Ion::Events::Arccosine) {
     if (m_rpnStack->length() < 1) return false;
-    m_rpnStack->push(new ArcCosine(m_rpnStack->pop()));
+    Expression *e = new ArcCosine((*m_rpnStack)[0].clone());
+    m_rpnStack->pop();
+    m_rpnStack->push(e);
 
   } else if (event == Ion::Events::Arctangent) {
     if (m_rpnStack->length() < 1) return false;
-    m_rpnStack->push(new ArcTangent(m_rpnStack->pop()));
+    Expression *e = new ArcTangent((*m_rpnStack)[0].clone());
+    m_rpnStack->pop();
+    m_rpnStack->push(e);
 
   } else if (event == Ion::Events::Ln) {
     if (m_rpnStack->length() < 1) return false;
-    m_rpnStack->push(new NaperianLogarithm(m_rpnStack->pop()));
+    Expression *e = new NaperianLogarithm((*m_rpnStack)[0].clone());
+    m_rpnStack->pop();
+    m_rpnStack->push(e);
 
   } else if (event == Ion::Events::Log) {
     if (m_rpnStack->length() < 1) return false;
-    m_rpnStack->push(new Logarithm(m_rpnStack->pop()));
+    Expression *e = new Logarithm((*m_rpnStack)[0].clone());
+    m_rpnStack->pop();
+    m_rpnStack->push(e);
 
   } else if (event == Ion::Events::Exp) {
     if (m_rpnStack->length() < 1) return false;
-    m_rpnStack->push(new Power(Symbol(Ion::Charset::Exponential), m_rpnStack->pop()));
+    Expression *e = new Power(Symbol(Ion::Charset::Exponential), (*m_rpnStack)[0].clone());
+    m_rpnStack->pop();
+    m_rpnStack->push(e);
 
   } else if (event == Ion::Events::Sqrt) {
     if (m_rpnStack->length() < 1) return false;
-    m_rpnStack->push(new SquareRoot(m_rpnStack->pop()));
+    Expression *e = new SquareRoot((*m_rpnStack)[0].clone());
+    m_rpnStack->pop();
+    m_rpnStack->push(e);
 
   } else if (event == Ion::Events::Square) {
     if (m_rpnStack->length() < 1) return false;
-    m_rpnStack->push(new Power(Rational(2), m_rpnStack->pop()));
+    Expression *e = new Power(Rational(2), (*m_rpnStack)[0].clone());
+    m_rpnStack->pop();
+    m_rpnStack->push(e);
 
   } else {
     return false;

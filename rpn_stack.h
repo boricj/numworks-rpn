@@ -22,10 +22,6 @@ public:
   void pop();
   void clear();
 
-  void doOperation(Poincare::DynamicHierarchy * exp);
-  void doOperation(Poincare::StaticHierarchy<1> * exp);
-  void doOperation(Poincare::StaticHierarchy<2> * exp);
-
   int length() const { return m_length; }
 
   static constexpr int k_stackSize = 16;

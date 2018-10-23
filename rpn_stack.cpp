@@ -18,12 +18,12 @@ RpnStack::~RpnStack() {
 }
 
 void RpnStack::dup() {
-  push((*this)[0].clone());
+  push(new Poincare::Expression((*this)[0].clone()));
 }
 
 void RpnStack::swap() {
-  Poincare::Expression * a = (*this)[0].clone();
-  Poincare::Expression * b = (*this)[1].clone();
+  Poincare::Expression * a = new Poincare::Expression((*this)[0].clone());
+  Poincare::Expression * b = new Poincare::Expression((*this)[1].clone());
   pop();
   pop();
   push(a);
@@ -31,9 +31,9 @@ void RpnStack::swap() {
 }
 
 void RpnStack::rot() {
-  Poincare::Expression * a = (*this)[0].clone();
-  Poincare::Expression * b = (*this)[1].clone();
-  Poincare::Expression * c = (*this)[2].clone();
+  Poincare::Expression * a = new Poincare::Expression((*this)[0].clone());
+  Poincare::Expression * b = new Poincare::Expression((*this)[1].clone());
+  Poincare::Expression * c = new Poincare::Expression((*this)[2].clone());
   pop();
   pop();
   pop();
@@ -43,11 +43,11 @@ void RpnStack::rot() {
 }
 
 void RpnStack::over() {
-  push((*this)[1].clone());
+  push(new Poincare::Expression((*this)[1].clone()));
 }
 
 bool RpnStack::push(const char *text) {
-  Poincare::Expression * exp = Poincare::Expression::parse(text);
+  Poincare::Expression * exp = new Poincare::Expression(Poincare::Expression::parse(text));
   if (exp == nullptr) {
     return false;
   }
@@ -77,35 +77,6 @@ void RpnStack::clear() {
   for (int i = 0; i < RpnStack::k_stackSize; i++) {
     this->pop();
   }
-}
-
-void RpnStack::doOperation(Poincare::DynamicHierarchy * exp) {
-  exp->addOperand((*this)[1].clone());
-  exp->addOperand((*this)[0].clone());
-  pop();
-  pop();
-
-  push(exp);
-}
-
-void RpnStack::doOperation(Poincare::StaticHierarchy<1> * exp) {
-  Poincare::ListData listData;
-  listData.pushExpression((*this)[0].clone());
-  exp->setArgument(&listData, 2, true);
-  pop();
-
-  push(exp);
-}
-
-void RpnStack::doOperation(Poincare::StaticHierarchy<2> * exp) {
-  Poincare::ListData listData;
-  listData.pushExpression((*this)[1].clone());
-  listData.pushExpression((*this)[0].clone());
-  exp->setArgument(&listData, 2, true);
-  pop();
-  pop();
-
-  push(exp);
 }
 
 }
