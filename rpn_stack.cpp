@@ -7,21 +7,26 @@ namespace Rpn {
 
 RpnStack::RpnStack() {
   for (int i = 0; i < k_stackSize; i++) {
-    m_stack[i] = new Poincare::Rational(0);
+    strcpy(m_expressions[i], "0");
   }
+  m_isPacked = true;
 }
 
 RpnStack::~RpnStack() {
-  for (int i = 0; i < k_stackSize; i++) {
-    delete m_stack[i];
+  if (!m_isPacked) {
+    for (int i = 0; i < k_stackSize; i++) {
+      delete m_stack[i];
+    }
   }
 }
 
 void RpnStack::dup() {
+  assert(!m_isPacked);
   push(new Poincare::Expression((*this)[0].clone()));
 }
 
 void RpnStack::swap() {
+  assert(!m_isPacked);
   if (m_length < 2)
       return;
 
@@ -31,6 +36,7 @@ void RpnStack::swap() {
 }
 
 void RpnStack::rot() {
+  assert(!m_isPacked);
   if (m_length < 2)
       return;
 
@@ -45,10 +51,12 @@ void RpnStack::rot() {
 }
 
 void RpnStack::over() {
+  assert(!m_isPacked);
   push(new Poincare::Expression((*this)[1].clone()));
 }
 
 bool RpnStack::push(const char *text) {
+  assert(!m_isPacked);
   Poincare::Expression *exp = new Poincare::Expression(Poincare::Expression::parse(text));
   if (exp == nullptr) {
     return false;
@@ -58,6 +66,7 @@ bool RpnStack::push(const char *text) {
 }
 
 void RpnStack::push(Poincare::Expression * exp) {
+  assert(!m_isPacked);
   if (m_length == k_stackSize)
       return;
 
@@ -67,6 +76,7 @@ void RpnStack::push(Poincare::Expression * exp) {
 }
 
 Poincare::Expression RpnStack::pop() {
+  assert(!m_isPacked);
   if (!m_length)
       return Poincare::Rational(0);
 
@@ -80,11 +90,44 @@ Poincare::Expression RpnStack::pop() {
 }
 
 void RpnStack::clear() {
-  for (int i = 0; i < RpnStack::k_stackSize; i++) {
-      delete m_stack[i];
-      m_stack[i] = new Poincare::Rational(0);
+  if (m_isPacked) {
+    for (int i = 0; i < RpnStack::k_stackSize; i++) {
+      m_expressions[i][0] = '\0';
+    }
+  }
+  else {
+    for (int i = 0; i < RpnStack::k_stackSize; i++) {
+        delete m_stack[i];
+        m_stack[i] = new Poincare::Rational(0);
+    }
   }
   m_length = 0;
 }
+
+void RpnStack::tidy() {
+  if (m_isPacked) {
+    return;
+  }
+
+  for (int i = 0; i < RpnStack::k_stackSize; i++) {
+    m_stack[i]->serialize(m_expressions[i], sizeof(m_expressions[i]));
+    delete m_stack[i];
+  }
+
+  m_isPacked = true;
+}
+
+void RpnStack::unpack() {
+  if (!m_isPacked) {
+    return;
+  }
+
+  for (int i = 0; i < RpnStack::k_stackSize; i++) {
+    m_stack[i] = new Poincare::Expression(Poincare::Expression::parse(m_expressions[i]));
+  }
+
+  m_isPacked = false;
+}
+
 
 }
