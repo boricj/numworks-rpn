@@ -3,8 +3,10 @@
 #include "app.h"
 #include "rpn_prompt_controller.h"
 #include "../i18n.h"
-#include "../../poincare/include/poincare_layouts.h"
+#include "../shared/poincare_helpers.h"
 #include <assert.h>
+
+using namespace Poincare;
 
 namespace Rpn {
 
@@ -27,7 +29,7 @@ bool RpnStackController::handleEvent(Ion::Events::Event event) {
   }
   else if (event == Ion::Events::EXE || event == Ion::Events::OK) {
     char buffer[256];
-    (*m_rpnStack)[m_rpnStack->length() - selectedRow() - 1].writeTextInBuffer(buffer, sizeof(buffer));
+    (*m_rpnStack)[m_rpnStack->length() - selectedRow() - 1].serialize(buffer, sizeof(buffer));
     m_promptController->setText(buffer);
     app()->setFirstResponder(m_promptController);
     return true;
@@ -41,10 +43,17 @@ void RpnStackController::willDisplayCellForIndex(HighlightCell * cell, int index
 
   EvenOddBufferTextCell *realCell = static_cast<EvenOddBufferTextCell *>(cell);
   realCell->setEven(index%2);
-  realCell->setFontSize(KDText::FontSize::Large);
-  Poincare::Expression *e = (&((*m_rpnStack)[m_rpnStack->length() - index - 1]))->approximate<double>(*((Rpn::App*)app())->localContext());
-  e->writeTextInBuffer(buffer, sizeof(buffer));
-  delete e;
+  realCell->setFont(KDFont::LargeFont);
+
+  const Expression *e = &(*m_rpnStack)[m_rpnStack->length() - index - 1];
+  Expression approx = e->approximate<double>(
+          *((Rpn::App*) app())->localContext(),
+          Preferences::sharedPreferences()->angleUnit(),
+          Preferences::sharedPreferences()->complexFormat()
+  );
+
+  approx.serialize(buffer, sizeof(buffer));
+
   realCell->setText(buffer);
   realCell->reloadCell();
 }

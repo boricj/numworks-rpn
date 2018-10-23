@@ -18,19 +18,15 @@ public:
   void rot();
   void over();
   bool push(const char *text);
-  void push(Poincare::Expression * exp);
-  void pop();
+  void push(Poincare::Expression *exp);
+  Poincare::Expression pop();
   void clear();
-
-  void doOperation(Poincare::DynamicHierarchy * exp);
-  void doOperation(Poincare::StaticHierarchy<1> * exp);
-  void doOperation(Poincare::StaticHierarchy<2> * exp);
 
   int length() const { return m_length; }
 
   static constexpr int k_stackSize = 16;
 private:
-  Poincare::Expression * m_stack[k_stackSize];
+  Poincare::Expression *m_stack[k_stackSize];
   int m_length;
 };
 

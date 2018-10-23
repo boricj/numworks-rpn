@@ -1,5 +1,5 @@
 #include "rpn_stack.h"
-#include "../../poincare/include/poincare_layouts.h"
+#include "../shared/poincare_helpers.h"
 #include "ion/charset.h"
 #include <string.h>
 
@@ -18,36 +18,38 @@ RpnStack::~RpnStack() {
 }
 
 void RpnStack::dup() {
-  push((*this)[0].clone());
+  push(new Poincare::Expression((*this)[0].clone()));
 }
 
 void RpnStack::swap() {
-  Poincare::Expression * a = (*this)[0].clone();
-  Poincare::Expression * b = (*this)[1].clone();
-  pop();
-  pop();
-  push(a);
-  push(b);
+  if (m_length < 2)
+      return;
+
+  Poincare::Expression *tmp = m_stack[m_length - 1];
+  m_stack[m_length - 1] = m_stack[m_length - 2];
+  m_stack[m_length - 2] = tmp;
 }
 
 void RpnStack::rot() {
-  Poincare::Expression * a = (*this)[0].clone();
-  Poincare::Expression * b = (*this)[1].clone();
-  Poincare::Expression * c = (*this)[2].clone();
-  pop();
-  pop();
-  pop();
-  push(b);
-  push(a);
-  push(c);
+  if (m_length < 2)
+      return;
+
+  // move everything one element forward
+  Poincare::Expression *tmp, *last = m_stack[0];
+  for (int i = 1; i < m_length; i++) {
+      tmp = m_stack[i];
+      m_stack[i] = last;
+      last = tmp;
+  }
+  m_stack[0] = last;
 }
 
 void RpnStack::over() {
-  push((*this)[1].clone());
+  push(new Poincare::Expression((*this)[1].clone()));
 }
 
 bool RpnStack::push(const char *text) {
-  Poincare::Expression * exp = Poincare::Expression::parse(text);
+  Poincare::Expression *exp = new Poincare::Expression(Poincare::Expression::parse(text));
   if (exp == nullptr) {
     return false;
   }
@@ -56,56 +58,33 @@ bool RpnStack::push(const char *text) {
 }
 
 void RpnStack::push(Poincare::Expression * exp) {
-  delete m_stack[k_stackSize-1];
-  for (int i = k_stackSize-1; i > 0; i--) {
-    m_stack[i] = m_stack[i-1];
-  }
-  m_stack[0] = exp;
-  m_length += m_length < k_stackSize ? 1 : 0;
+  if (m_length == k_stackSize)
+      return;
+
+  delete m_stack[m_length];
+  m_stack[m_length] = exp;
+  m_length++;
 }
 
-void RpnStack::pop() {
-  delete m_stack[0];
-  for (int i = 0; i < k_stackSize-1; i++) {
-    m_stack[i] = m_stack[i+1];
-  }
-  m_stack[k_stackSize-1] = new Poincare::Rational(0);
-  m_length -= m_length > 0 ? 1 : 0;
+Poincare::Expression RpnStack::pop() {
+  if (!m_length)
+      return Poincare::Rational(0);
+
+  m_length--;
+
+  Poincare::Expression e = *m_stack[m_length];
+  delete m_stack[m_length];
+  m_stack[m_length] = new Poincare::Rational(0);
+
+  return e;
 }
 
 void RpnStack::clear() {
   for (int i = 0; i < RpnStack::k_stackSize; i++) {
-    this->pop();
+      delete m_stack[i];
+      m_stack[i] = new Poincare::Rational(0);
   }
-}
-
-void RpnStack::doOperation(Poincare::DynamicHierarchy * exp) {
-  exp->addOperand((*this)[1].clone());
-  exp->addOperand((*this)[0].clone());
-  pop();
-  pop();
-
-  push(exp);
-}
-
-void RpnStack::doOperation(Poincare::StaticHierarchy<1> * exp) {
-  Poincare::ListData listData;
-  listData.pushExpression((*this)[0].clone());
-  exp->setArgument(&listData, 2, true);
-  pop();
-
-  push(exp);
-}
-
-void RpnStack::doOperation(Poincare::StaticHierarchy<2> * exp) {
-  Poincare::ListData listData;
-  listData.pushExpression((*this)[1].clone());
-  listData.pushExpression((*this)[0].clone());
-  exp->setArgument(&listData, 2, true);
-  pop();
-  pop();
-
-  push(exp);
+  m_length = 0;
 }
 
 }

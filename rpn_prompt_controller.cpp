@@ -3,12 +3,14 @@
 #include "../i18n.h"
 #include <assert.h>
 
+using namespace Poincare;
+
 namespace Rpn {
 
 RpnPromptController::ContentView::ContentView(Responder * parentResponder, RpnStackController * stackController, TextFieldDelegate * delegate) :
   View(),
   m_mainView(stackController, stackController, stackController),
-  m_promptView(parentResponder, m_textBuffer, m_textBuffer, sizeof(m_textBuffer), delegate, false, KDText::FontSize::Large),
+  m_promptView(parentResponder, m_textBuffer, m_textBuffer, sizeof(m_textBuffer), delegate, false, KDFont::LargeFont),
   m_textBuffer("")
 {
 }
@@ -158,92 +160,87 @@ bool RpnPromptController::handleEventSpecial(Ion::Events::Event event) {
 }
 
 bool RpnPromptController::handleEventOperation(Ion::Events::Event event) {
-  Poincare::DynamicHierarchy * dynHier = nullptr;
-  Poincare::StaticHierarchy<1> * staticHier1 = nullptr;
-  Poincare::StaticHierarchy<2> * staticHier2 = nullptr;
 
-  if (!(event == Ion::Events::Plus || event == Ion::Events::Minus || event == Ion::Events::Multiplication || event == Ion::Events::Division || event == Ion::Events::Space ||
-        event == Ion::Events::Sine || event == Ion::Events::Cosine || event == Ion::Events::Tangent ||
-        event == Ion::Events::Arcsine || event == Ion::Events::Arccosine || event == Ion::Events::Arctangent ||
-        event == Ion::Events::Ln || event == Ion::Events::Log || event == Ion::Events::Exp ||
-        event == Ion::Events::Sqrt || event == Ion::Events::Square || event == Ion::Events::Power)) {
+  if (!pushInput())
     return false;
-  }
 
-  if (!pushInput()) {
+  if (!m_rpnStack->length()) {
     return false;
-  }
 
-  // Basic
-  if (event == Ion::Events::Plus) {
-    dynHier = new Poincare::Addition();
-  }
-  else if (event == Ion::Events::Minus) {
-    staticHier2 = new Poincare::Subtraction();
-  }
-  else if (event == Ion::Events::Multiplication) {
-    dynHier = new Poincare::Multiplication();
-  }
-  else if (event == Ion::Events::Division) {
-    staticHier2 = new Poincare::Division();
-  }
-  else if (event == Ion::Events::Space) {
-    staticHier1 = new Poincare::Opposite();
-  }
-  // Trigonometry
-  else if (event == Ion::Events::Sine) {
-    staticHier1 = new Poincare::Sine();
-  }
-  else if (event == Ion::Events::Cosine) {
-    staticHier1 = new Poincare::Cosine();
-  }
-  else if (event == Ion::Events::Tangent) {
-    staticHier1 = new Poincare::Tangent();
-  }
-  else if (event == Ion::Events::Arcsine) {
-    staticHier1 = new Poincare::ArcSine();
-  }
-  else if (event == Ion::Events::Arccosine) {
-    staticHier1 = new Poincare::ArcCosine();
-  }
-  else if (event == Ion::Events::Arctangent) {
-    staticHier1 = new Poincare::ArcTangent();
-  }
-  // Logarithms
-  else if (event == Ion::Events::Ln) {
-    staticHier1 = new Poincare::NaperianLogarithm();
-  }
-  else if (event == Ion::Events::Log) {
-    m_rpnStack->push(new Poincare::Rational(10));
-    staticHier2 = new Poincare::Logarithm();
-  }
-  else if (event == Ion::Events::Exp) {
-    m_rpnStack->push(new Poincare::Symbol(Ion::Charset::Exponential));
-    m_rpnStack->swap();
-    staticHier2 = new Poincare::Power();
-  }
-  // Square/Power
-  else if (event == Ion::Events::Sqrt) {
-    staticHier1 = new Poincare::SquareRoot();
-  }
-  else if (event == Ion::Events::Square) {
-    m_rpnStack->push(new Poincare::Rational(2));
-    staticHier2 = new Poincare::Power();
-  }
-  else if (event == Ion::Events::Power) {
-    staticHier2 = new Poincare::Power();
-  }
 
-  if (dynHier) {
-    m_rpnStack->doOperation(dynHier);
-  }
-  else if (staticHier1) {
-    m_rpnStack->doOperation(staticHier1);
-  }
-  else if (staticHier2) {
-    m_rpnStack->doOperation(staticHier2);
-  }
-  else {
+  /* binary */
+
+  } else if (event == Ion::Events::Plus) {
+    if (m_rpnStack->length() < 2) return false;
+    m_rpnStack->push(new Addition(m_rpnStack->pop(), m_rpnStack->pop()));
+
+  } else if (event == Ion::Events::Minus) {
+    if (m_rpnStack->length() < 2) return false;
+    m_rpnStack->push(new Subtraction(m_rpnStack->pop(), m_rpnStack->pop()));
+
+  } else if (event == Ion::Events::Multiplication) {
+    if (m_rpnStack->length() < 2) return false;
+    m_rpnStack->push(new Multiplication(m_rpnStack->pop(), m_rpnStack->pop()));
+
+  } else if (event == Ion::Events::Division) {
+    if (m_rpnStack->length() < 2) return false;
+    m_rpnStack->push(new Division(m_rpnStack->pop(), m_rpnStack->pop()));
+
+  } else if (event == Ion::Events::Power) {
+    if (m_rpnStack->length() < 2) return false;
+    m_rpnStack->push(new Power(m_rpnStack->pop(), m_rpnStack->pop()));
+
+  /* unary */
+
+  } else if (event == Ion::Events::Space) {
+    if (m_rpnStack->length() < 1) return false;
+    m_rpnStack->push(new Opposite(m_rpnStack->pop()));
+
+  } else if (event == Ion::Events::Sine) {
+    if (m_rpnStack->length() < 1) return false;
+    m_rpnStack->push(new Sine(m_rpnStack->pop()));
+
+  } else if (event == Ion::Events::Cosine) {
+    if (m_rpnStack->length() < 1) return false;
+    m_rpnStack->push(new Cosine(m_rpnStack->pop()));
+
+  } else if (event == Ion::Events::Tangent) {
+    if (m_rpnStack->length() < 1) return false;
+    m_rpnStack->push(new Tangent(m_rpnStack->pop()));
+
+  } else if (event == Ion::Events::Arcsine) {
+    if (m_rpnStack->length() < 1) return false;
+    m_rpnStack->push(new ArcSine(m_rpnStack->pop()));
+
+  } else if (event == Ion::Events::Arccosine) {
+    if (m_rpnStack->length() < 1) return false;
+    m_rpnStack->push(new ArcCosine(m_rpnStack->pop()));
+
+  } else if (event == Ion::Events::Arctangent) {
+    if (m_rpnStack->length() < 1) return false;
+    m_rpnStack->push(new ArcTangent(m_rpnStack->pop()));
+
+  } else if (event == Ion::Events::Ln) {
+    if (m_rpnStack->length() < 1) return false;
+    m_rpnStack->push(new NaperianLogarithm(m_rpnStack->pop()));
+
+  } else if (event == Ion::Events::Log) {
+    if (m_rpnStack->length() < 1) return false;
+    m_rpnStack->push(new Logarithm(m_rpnStack->pop()));
+
+  } else if (event == Ion::Events::Exp) {
+    if (m_rpnStack->length() < 1) return false;
+    m_rpnStack->push(new Power(Symbol(Ion::Charset::Exponential), m_rpnStack->pop()));
+
+  } else if (event == Ion::Events::Sqrt) {
+    if (m_rpnStack->length() < 1) return false;
+    m_rpnStack->push(new SquareRoot(m_rpnStack->pop()));
+
+  } else if (event == Ion::Events::Square) {
+    if (m_rpnStack->length() < 1) return false;
+    m_rpnStack->push(new Power(Rational(2), m_rpnStack->pop()));
+
+  } else {
     return false;
   }
 
