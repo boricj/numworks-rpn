@@ -23,7 +23,9 @@ App::Snapshot::Snapshot()
 }
 
 App * App::Snapshot::unpack(Container * container) {
-  return new App(container, this);
+  App * app = new App(container, this);
+  m_rpnStack.unpack();
+  return app;
 }
 
 App::Descriptor * App::Snapshot::descriptor() {
@@ -33,6 +35,10 @@ App::Descriptor * App::Snapshot::descriptor() {
 
 RpnStack * App::Snapshot::rpnStack() {
   return &m_rpnStack;
+}
+
+void App::Snapshot::tidy() {
+  m_rpnStack.tidy();
 }
 
 void App::Snapshot::reset() {

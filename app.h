@@ -24,6 +24,7 @@ public:
     Descriptor * descriptor() override;
     RpnStack * rpnStack();
   private:
+    void tidy() override;
     RpnStack m_rpnStack;
   };
 private:
