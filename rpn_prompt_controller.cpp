@@ -161,10 +161,15 @@ bool RpnPromptController::handleEventSpecial(Ion::Events::Event event) {
 
 bool RpnPromptController::handleEventOperation(Ion::Events::Event event) {
 
-  if (!pushInput())
+  if (!(event == Ion::Events::Plus || event == Ion::Events::Minus || event == Ion::Events::Multiplication || event == Ion::Events::Division || event == Ion::Events::Space ||
+        event == Ion::Events::Sine || event == Ion::Events::Cosine || event == Ion::Events::Tangent ||
+        event == Ion::Events::Arcsine || event == Ion::Events::Arccosine || event == Ion::Events::Arctangent ||
+        event == Ion::Events::Ln || event == Ion::Events::Log || event == Ion::Events::Exp ||
+        event == Ion::Events::Sqrt || event == Ion::Events::Square || event == Ion::Events::Power)) {
     return false;
+  }
 
-  if (!m_rpnStack->length())
+  if (!pushInput())
     return false;
 
   /* binary */
