@@ -263,7 +263,7 @@ bool RpnPromptController::handleEventOperation(Ion::Events::Event event) {
     m_rpnStack->push(e);
 
   } else if (event == Ion::Events::Square) {
-    Expression *e = new Power(Rational(2), (*m_rpnStack)[0].clone());
+    Expression *e = new Power((*m_rpnStack)[0].clone(), Rational(2));
     m_rpnStack->pop();
     m_rpnStack->push(e);
 
