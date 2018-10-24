@@ -3,29 +3,35 @@
 #include "ion/charset.h"
 #include <string.h>
 
-using namespace Shared;
-
 namespace Rpn {
 
 RpnStack::RpnStack() {
   for (int i = 0; i < k_stackSize; i++) {
-    m_stack[i] = new Poincare::Rational(0);
+    strlcpy(m_expressions[i], "0", sizeof(*m_expressions));
   }
+  m_isPacked = true;
 }
 
 RpnStack::~RpnStack() {
+  if (m_isPacked)
+    return;
+
   for (int i = 0; i < k_stackSize; i++) {
     delete m_stack[i];
   }
 }
 
 void RpnStack::dup() {
-  push((*this)[0].clone());
+  assert(!m_isPacked);
+
+  push(new Poincare::Expression((*this)[0].clone()));
 }
 
 void RpnStack::swap() {
-  Poincare::Expression * a = (*this)[0].clone();
-  Poincare::Expression * b = (*this)[1].clone();
+  assert(!m_isPacked);
+
+  Poincare::Expression * a = new Poincare::Expression((*this)[0].clone());
+  Poincare::Expression * b = new Poincare::Expression((*this)[1].clone());
   pop();
   pop();
   push(a);
@@ -33,9 +39,11 @@ void RpnStack::swap() {
 }
 
 void RpnStack::rot() {
-  Poincare::Expression * a = (*this)[0].clone();
-  Poincare::Expression * b = (*this)[1].clone();
-  Poincare::Expression * c = (*this)[2].clone();
+  assert(!m_isPacked);
+
+  Poincare::Expression * a = new Poincare::Expression((*this)[0].clone());
+  Poincare::Expression * b = new Poincare::Expression((*this)[1].clone());
+  Poincare::Expression * c = new Poincare::Expression((*this)[2].clone());
   pop();
   pop();
   pop();
@@ -45,11 +53,15 @@ void RpnStack::rot() {
 }
 
 void RpnStack::over() {
-  push((*this)[1].clone());
+  assert(!m_isPacked);
+
+  push(new Poincare::Expression((*this)[1].clone()));
 }
 
 bool RpnStack::push(const char *text) {
-  Poincare::Expression * exp = Poincare::Expression::parse(text);
+  assert(!m_isPacked);
+
+  Poincare::Expression * exp = new Poincare::Expression(Poincare::Expression::parse(text));
   if (exp == nullptr) {
     return false;
   }
@@ -58,6 +70,8 @@ bool RpnStack::push(const char *text) {
 }
 
 void RpnStack::push(Poincare::Expression * exp) {
+  assert(!m_isPacked);
+
   delete m_stack[k_stackSize-1];
   for (int i = k_stackSize-1; i > 0; i--) {
     m_stack[i] = m_stack[i-1];
@@ -66,7 +80,10 @@ void RpnStack::push(Poincare::Expression * exp) {
   m_length += m_length < k_stackSize ? 1 : 0;
 }
 
+
 void RpnStack::pop() {
+  assert(!m_isPacked);
+
   delete m_stack[0];
   for (int i = 0; i < k_stackSize-1; i++) {
     m_stack[i] = m_stack[i+1];
@@ -76,38 +93,41 @@ void RpnStack::pop() {
 }
 
 void RpnStack::clear() {
-  for (int i = 0; i < RpnStack::k_stackSize; i++) {
-    this->pop();
+  if (m_isPacked) {
+    for (int i = 0; i < RpnStack::k_stackSize; i++) {
+      m_expressions[i][0] = '\0';
+    }
+
+  } else {
+    for (int i = 0; i < RpnStack::k_stackSize; i++) {
+      this->pop();
+    }
   }
 }
 
-void RpnStack::doOperation(Poincare::DynamicHierarchy * exp) {
-  exp->addOperand((*this)[1].clone());
-  exp->addOperand((*this)[0].clone());
-  pop();
-  pop();
+void RpnStack::tidy() {
+  if (m_isPacked) {
+    return;
+  }
 
-  push(exp);
+  for (int i = 0; i < RpnStack::k_stackSize; i++) {
+    m_stack[i]->serialize(m_expressions[i], sizeof(m_expressions[i]));
+    delete m_stack[i];
+  }
+
+  m_isPacked = true;
 }
 
-void RpnStack::doOperation(Poincare::StaticHierarchy<1> * exp) {
-  Poincare::ListData listData;
-  listData.pushExpression((*this)[0].clone());
-  exp->setArgument(&listData, 2, true);
-  pop();
+void RpnStack::unpack() {
+  if (!m_isPacked) {
+    return;
+  }
 
-  push(exp);
-}
+  for (int i = 0; i < RpnStack::k_stackSize; i++) {
+    m_stack[i] = new Poincare::Expression(Poincare::Expression::parse(m_expressions[i]));
+  }
 
-void RpnStack::doOperation(Poincare::StaticHierarchy<2> * exp) {
-  Poincare::ListData listData;
-  listData.pushExpression((*this)[1].clone());
-  listData.pushExpression((*this)[0].clone());
-  exp->setArgument(&listData, 2, true);
-  pop();
-  pop();
-
-  push(exp);
+  m_isPacked = false;
 }
 
 }

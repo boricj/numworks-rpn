@@ -1,7 +1,8 @@
 #ifndef RPN_STACK_H
 #define RPN_STACK_H
 
-#include "poincare.h"
+#include <escher.h>
+#include <poincare.h>
 #include <stddef.h>
 
 namespace Rpn {
@@ -22,16 +23,18 @@ public:
   void pop();
   void clear();
 
-  void doOperation(Poincare::DynamicHierarchy * exp);
-  void doOperation(Poincare::StaticHierarchy<1> * exp);
-  void doOperation(Poincare::StaticHierarchy<2> * exp);
+  void tidy();
+  void unpack();
 
   int length() const { return m_length; }
 
   static constexpr int k_stackSize = 16;
+  constexpr static int k_printedExpressionSize = 2*::TextField::maxBufferSize();
 private:
-  Poincare::Expression * m_stack[k_stackSize];
+  Poincare::Expression *m_stack[k_stackSize];
+  char m_expressions[k_stackSize][k_printedExpressionSize];
   int m_length;
+  bool m_isPacked;
 };
 
 }

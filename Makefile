@@ -1,5 +1,5 @@
-snapshots += Rpn::App::Snapshot
-snapshot_headers += apps/rpn/app.h
+apps += Rpn::App
+app_headers += apps/rpn/app.h
 
 app_objs += $(addprefix apps/rpn/,\
   app.o\
