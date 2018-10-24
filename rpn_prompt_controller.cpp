@@ -2,6 +2,7 @@
 #include "app.h"
 #include "../i18n.h"
 #include <assert.h>
+#include <poincare_nodes.h>
 
 using namespace Poincare;
 

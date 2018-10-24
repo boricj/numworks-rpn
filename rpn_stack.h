@@ -2,7 +2,7 @@
 #define RPN_STACK_H
 
 #include <escher.h>
-#include <poincare.h>
+#include <poincare/expression.h>
 #include <stddef.h>
 
 namespace Rpn {

@@ -88,7 +88,7 @@ void RpnStack::pop() {
   for (int i = 0; i < k_stackSize-1; i++) {
     m_stack[i] = m_stack[i+1];
   }
-  m_stack[k_stackSize-1] = new Poincare::Rational(0);
+  m_stack[k_stackSize-1] = new Poincare::Expression(Poincare::Expression::parse("0"));
   m_length -= m_length > 0 ? 1 : 0;
 }
 
