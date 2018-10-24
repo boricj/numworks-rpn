@@ -7,7 +7,7 @@ namespace Rpn {
 
 RpnStack::RpnStack() {
   for (int i = 0; i < k_stackSize; i++) {
-    strcpy(m_expressions[i], "0");
+    strlcpy(m_expressions[i], "0", sizeof(*m_expressions));
   }
   m_isPacked = true;
 }
