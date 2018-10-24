@@ -2,22 +2,22 @@
 #include "../shared/poincare_helpers.h"
 #include "ion/charset.h"
 #include <string.h>
+#include <poincare_nodes.h>
 
 namespace Rpn {
 
 RpnStack::RpnStack() {
   for (int i = 0; i < k_stackSize; i++) {
-    strlcpy(m_expressions[i], "0", sizeof(*m_expressions));
+    strlcpy(m_expressions[i], "0", k_printedExpressionSize);
   }
   m_isPacked = true;
 }
 
 RpnStack::~RpnStack() {
-  if (m_isPacked)
-    return;
-
-  for (int i = 0; i < k_stackSize; i++) {
-    delete m_stack[i];
+  if (!m_isPacked) {
+    for (int i = 0; i < k_stackSize; i++) {
+      delete m_stack[i];
+    }
   }
 }
 
@@ -88,7 +88,7 @@ void RpnStack::pop() {
   for (int i = 0; i < k_stackSize-1; i++) {
     m_stack[i] = m_stack[i+1];
   }
-  m_stack[k_stackSize-1] = new Poincare::Expression(Poincare::Expression::parse("0"));
+  m_stack[k_stackSize-1] = new Poincare::Rational(0);
   m_length -= m_length > 0 ? 1 : 0;
 }
 
@@ -97,8 +97,8 @@ void RpnStack::clear() {
     for (int i = 0; i < RpnStack::k_stackSize; i++) {
       m_expressions[i][0] = '\0';
     }
-
-  } else {
+  }
+  else {
     for (int i = 0; i < RpnStack::k_stackSize; i++) {
       this->pop();
     }
@@ -106,28 +106,24 @@ void RpnStack::clear() {
 }
 
 void RpnStack::tidy() {
-  if (m_isPacked) {
-    return;
-  }
+  if (!m_isPacked) {
+    for (int i = 0; i < RpnStack::k_stackSize; i++) {
+      m_stack[i]->serialize(m_expressions[i], sizeof(m_expressions[i]));
+      delete m_stack[i];
+    }
 
-  for (int i = 0; i < RpnStack::k_stackSize; i++) {
-    m_stack[i]->serialize(m_expressions[i], sizeof(m_expressions[i]));
-    delete m_stack[i];
+    m_isPacked = true;
   }
-
-  m_isPacked = true;
 }
 
 void RpnStack::unpack() {
-  if (!m_isPacked) {
-    return;
-  }
+  if (m_isPacked) {
+    for (int i = 0; i < RpnStack::k_stackSize; i++) {
+      m_stack[i] = new Poincare::Expression(Poincare::Expression::parse(m_expressions[i]));
+    }
 
-  for (int i = 0; i < RpnStack::k_stackSize; i++) {
-    m_stack[i] = new Poincare::Expression(Poincare::Expression::parse(m_expressions[i]));
+    m_isPacked = false;
   }
-
-  m_isPacked = false;
 }
 
 }
