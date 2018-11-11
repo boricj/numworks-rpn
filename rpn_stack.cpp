@@ -3,35 +3,49 @@
 #include "ion/charset.h"
 #include <string.h>
 #include <poincare_nodes.h>
+#include <poincare/preferences.h>
 
 namespace Rpn {
 
-RpnStack::RpnStack() {
-  for (int i = 0; i < k_stackSize; i++) {
-    strlcpy(m_expressions[i], "0", k_printedExpressionSize);
-  }
-  m_isPacked = true;
+RpnStack::RpnElement::RpnElement() : expression("0"), approximate("0"), expressionHeight(KDFont::LargeFont->glyphSize().height()), approximateHeight(KDFont::LargeFont->glyphSize().height()) {
 }
 
-RpnStack::~RpnStack() {
-  if (!m_isPacked) {
-    for (int i = 0; i < k_stackSize; i++) {
-      delete m_stack[i];
-    }
-  }
+RpnStack::RpnElement::RpnElement(Poincare::Expression &exp, Poincare::Context &context) {
+  Poincare::Expression exact = exp.simplify(context, Poincare::Preferences::sharedPreferences()->angleUnit());
+  exact.serialize(expression, k_expressionSize);
+  expressionHeight = exact.createLayout(
+    Poincare::Preferences::sharedPreferences()->displayMode(),
+    Poincare::Preferences::sharedPreferences()->numberOfSignificantDigits()
+  ).layoutSize().height();
+
+  Poincare::Expression approx = exact.approximate<double>(
+    context,
+    Poincare::Preferences::sharedPreferences()->angleUnit(),
+    Poincare::Preferences::sharedPreferences()->complexFormat()
+  );
+  approx.serialize(approximate, k_expressionSize);
+  approximateHeight = approx.createLayout(
+    Poincare::Preferences::sharedPreferences()->displayMode(),
+    Poincare::Preferences::sharedPreferences()->numberOfSignificantDigits()
+  ).layoutSize().height();
+}
+
+Poincare::Expression RpnStack::exact(size_t idx) const {
+  return Poincare::Expression::parse(m_stack[idx].expression);
+}
+
+Poincare::Expression RpnStack::expression(size_t idx) const {
+  return Poincare::Expression::parse((*this)[idx]);
 }
 
 void RpnStack::dup() {
-  assert(!m_isPacked);
-
-  push(new Poincare::Expression((*this)[0].clone()));
+  RpnElement a = m_stack[0];
+  push(a);
 }
 
 void RpnStack::swap() {
-  assert(!m_isPacked);
-
-  Poincare::Expression * a = new Poincare::Expression((*this)[0].clone());
-  Poincare::Expression * b = new Poincare::Expression((*this)[1].clone());
+  RpnElement a = m_stack[0];
+  RpnElement b = m_stack[1];
   pop();
   pop();
   push(a);
@@ -39,11 +53,9 @@ void RpnStack::swap() {
 }
 
 void RpnStack::rot() {
-  assert(!m_isPacked);
-
-  Poincare::Expression * a = new Poincare::Expression((*this)[0].clone());
-  Poincare::Expression * b = new Poincare::Expression((*this)[1].clone());
-  Poincare::Expression * c = new Poincare::Expression((*this)[2].clone());
+  RpnElement a = m_stack[0];
+  RpnElement b = m_stack[1];
+  RpnElement c = m_stack[2];
   pop();
   pop();
   pop();
@@ -53,76 +65,44 @@ void RpnStack::rot() {
 }
 
 void RpnStack::over() {
-  assert(!m_isPacked);
-
-  push(new Poincare::Expression((*this)[1].clone()));
+  RpnElement a = m_stack[1];
+  push(a);
 }
 
-bool RpnStack::push(const char *text) {
-  assert(!m_isPacked);
-
-  Poincare::Expression * exp = new Poincare::Expression(Poincare::Expression::parse(text));
-  if (exp == nullptr) {
+bool RpnStack::push(const char *text, Poincare::Context &context) {
+  Poincare::Expression exp = Poincare::Expression::parse(text);
+  if (exp.isUninitialized()) {
     return false;
   }
-  push(exp);
+  push(exp, context);
   return true;
 }
 
-void RpnStack::push(Poincare::Expression * exp) {
-  assert(!m_isPacked);
+void RpnStack::push(Poincare::Expression &e, Poincare::Context &context) {
+  RpnElement a(e, context);
+  push(a);
+}
 
-  delete m_stack[k_stackSize-1];
+void RpnStack::push(RpnElement &e) {
   for (int i = k_stackSize-1; i > 0; i--) {
     m_stack[i] = m_stack[i-1];
   }
-  m_stack[0] = exp;
+
+  m_stack[0] = e;
   m_length += m_length < k_stackSize ? 1 : 0;
 }
 
-
 void RpnStack::pop() {
-  assert(!m_isPacked);
-
-  delete m_stack[0];
   for (int i = 0; i < k_stackSize-1; i++) {
     m_stack[i] = m_stack[i+1];
   }
-  m_stack[k_stackSize-1] = new Poincare::Rational(0);
+  m_stack[k_stackSize-1] = RpnElement();
   m_length -= m_length > 0 ? 1 : 0;
 }
 
 void RpnStack::clear() {
-  if (m_isPacked) {
-    for (int i = 0; i < RpnStack::k_stackSize; i++) {
-      m_expressions[i][0] = '\0';
-    }
-  }
-  else {
-    for (int i = 0; i < RpnStack::k_stackSize; i++) {
-      this->pop();
-    }
-  }
-}
-
-void RpnStack::tidy() {
-  if (!m_isPacked) {
-    for (int i = 0; i < RpnStack::k_stackSize; i++) {
-      m_stack[i]->serialize(m_expressions[i], sizeof(m_expressions[i]));
-      delete m_stack[i];
-    }
-
-    m_isPacked = true;
-  }
-}
-
-void RpnStack::unpack() {
-  if (m_isPacked) {
-    for (int i = 0; i < RpnStack::k_stackSize; i++) {
-      m_stack[i] = new Poincare::Expression(Poincare::Expression::parse(m_expressions[i]));
-    }
-
-    m_isPacked = false;
+  while (m_length) {
+    pop();
   }
 }
 

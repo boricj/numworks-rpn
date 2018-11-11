@@ -28,9 +28,7 @@ bool RpnStackController::handleEvent(Ion::Events::Event event) {
     return true;
   }
   else if (event == Ion::Events::EXE || event == Ion::Events::OK) {
-    char buffer[256];
-    (*m_rpnStack)[m_rpnStack->length() - selectedRow() - 1].serialize(buffer, sizeof(buffer));
-    m_promptController->setText(buffer);
+    m_promptController->setText((*m_rpnStack)[m_rpnStack->length() - selectedRow() - 1]);
     app()->setFirstResponder(m_promptController);
     return true;
   }
@@ -38,24 +36,22 @@ bool RpnStackController::handleEvent(Ion::Events::Event event) {
   return false;
 }
 
+KDCoordinate RpnStackController::rowHeight(int i) {
+  return m_rpnStack->height(m_rpnStack->length() - i - 1) + k_padding * 2;
+}
+
 void RpnStackController::willDisplayCellForIndex(HighlightCell * cell, int index) {
-  char buffer[256];
-
-  EvenOddBufferTextCell *realCell = static_cast<EvenOddBufferTextCell *>(cell);
+  EvenOddExpressionCell *realCell = static_cast<EvenOddExpressionCell *>(cell);
   realCell->setEven(index%2);
-  realCell->setFont(KDFont::LargeFont);
+  realCell->setAlignment(1, 0.5);
 
-  const Expression *e = &(*m_rpnStack)[m_rpnStack->length() - index - 1];
-  Expression approx = e->approximate<double>(
-          *((Rpn::App*) app())->localContext(),
-          Preferences::sharedPreferences()->angleUnit(),
-          Preferences::sharedPreferences()->complexFormat()
-  );
-
-  approx.serialize(buffer, sizeof(buffer));
-
-  realCell->setText(buffer);
+  realCell->setLayout(createLayout(index));
   realCell->reloadCell();
+}
+
+Poincare::Layout RpnStackController::createLayout(int index) {
+  Expression e = m_rpnStack->expression(m_rpnStack->length() - index - 1);
+  return e.createLayout(Preferences::sharedPreferences()->displayMode(), Preferences::sharedPreferences()->numberOfSignificantDigits());
 }
 
 }

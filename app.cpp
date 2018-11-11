@@ -24,7 +24,6 @@ App::Snapshot::Snapshot()
 
 App * App::Snapshot::unpack(Container * container) {
   App * app = new App(container, this);
-  m_rpnStack.unpack();
   return app;
 }
 
@@ -38,7 +37,6 @@ RpnStack * App::Snapshot::rpnStack() {
 }
 
 void App::Snapshot::tidy() {
-  m_rpnStack.tidy();
 }
 
 void App::Snapshot::reset() {

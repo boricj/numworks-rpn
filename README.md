@@ -20,3 +20,4 @@ make EPSILON_APPS='rpn graph code statistics probability solver calculation sequ
 - Right parenthesis: `SWAP`
 - Left parenthesis: `ROT`
 - Space (alpha+'-'): Opposite
+- Equal (shift+pi): Switch between exact and approximation modes

@@ -9,32 +9,46 @@ namespace Rpn {
 
 class RpnStack {
 public:
-  RpnStack();
-  ~RpnStack();
+  constexpr static int k_stackSize = 8;
+  constexpr static int k_expressionSize = 2*::TextField::maxBufferSize();
 
-  const Poincare::Expression & operator[](size_t idx) const { return *(m_stack[idx]); }
+private:
+  struct RpnElement {
+    RpnElement();
+    RpnElement(Poincare::Expression &exp, Poincare::Context &context);
+
+    char expression[k_expressionSize];
+    char approximate[k_expressionSize];
+    KDCoordinate expressionHeight;
+    KDCoordinate approximateHeight;
+  };
+
+public:
+  RpnStack() = default;
+
+  const char* operator[](size_t idx) const { return approximate ? m_stack[idx].approximate : m_stack[idx].expression; }
+  Poincare::Expression exact(size_t idx) const;
+  Poincare::Expression expression(size_t idx) const;
+  KDCoordinate height(size_t idx) const { return approximate ? m_stack[idx].approximateHeight : m_stack[idx].expressionHeight; }
 
   void dup();
   void swap();
   void rot();
   void over();
-  bool push(const char *text);
-  void push(Poincare::Expression * exp);
+  bool push(const char *text, Poincare::Context &context);
+  void push(Poincare::Expression &exp, Poincare::Context &context);
   void pop();
   void clear();
 
-  void tidy();
-  void unpack();
-
   int length() const { return m_length; }
 
-  static constexpr int k_stackSize = 16;
-  constexpr static int k_printedExpressionSize = 2*::TextField::maxBufferSize();
+  bool approximate;
+
 private:
-  Poincare::Expression *m_stack[k_stackSize];
-  char m_expressions[k_stackSize][k_printedExpressionSize];
+  void push(RpnElement &exp);
+
+  RpnElement m_stack[k_stackSize];
   int m_length;
-  bool m_isPacked;
 };
 
 }

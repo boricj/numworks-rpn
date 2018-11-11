@@ -156,6 +156,10 @@ bool RpnPromptController::handleEventSpecial(Ion::Events::Event event) {
     m_rpnStack->rot();
     handled = true;
   }
+  else if (event == Ion::Events::Equal) {
+    m_rpnStack->approximate = !m_rpnStack->approximate;
+    handled = true;
+  }
 
   return handled;
 }
@@ -175,102 +179,90 @@ bool RpnPromptController::handleEventOperation(Ion::Events::Event event) {
 
   /* binary */
 
+  Expression *e = nullptr;
+  int pop;
+
   if (event == Ion::Events::Plus) {
-    Expression *e = new Addition((*m_rpnStack)[1].clone(), (*m_rpnStack)[0].clone());
-    m_rpnStack->pop();
-    m_rpnStack->pop();
-    m_rpnStack->push(e);
+    e = new Addition(m_rpnStack->exact(1), m_rpnStack->exact(0));
+    pop = 2;
   }
   else if (event == Ion::Events::Minus) {
-    Expression *e = new Subtraction((*m_rpnStack)[1].clone(), (*m_rpnStack)[0].clone());
-    m_rpnStack->pop();
-    m_rpnStack->pop();
-    m_rpnStack->push(e);
+    e = new Subtraction(m_rpnStack->exact(1), m_rpnStack->exact(0));
+    pop = 2;
   }
   else if (event == Ion::Events::Multiplication) {
-    Expression *e = new Multiplication((*m_rpnStack)[1].clone(), (*m_rpnStack)[0].clone());
-    m_rpnStack->pop();
-    m_rpnStack->pop();
-    m_rpnStack->push(e);
+    e = new Multiplication(m_rpnStack->exact(1), m_rpnStack->exact(0));
+    pop = 2;
   }
   else if (event == Ion::Events::Division) {
-    Expression *e = new Division((*m_rpnStack)[1].clone(), (*m_rpnStack)[0].clone());
-    m_rpnStack->pop();
-    m_rpnStack->pop();
-    m_rpnStack->push(e);
+    e = new Division(m_rpnStack->exact(1), m_rpnStack->exact(0));
+    pop = 2;
   }
   else if (event == Ion::Events::Power) {
-    Expression *e = new Power((*m_rpnStack)[1].clone(), (*m_rpnStack)[0].clone());
-    m_rpnStack->pop();
-    m_rpnStack->pop();
-    m_rpnStack->push(e);
+    e = new Power(m_rpnStack->exact(1), m_rpnStack->exact(0));
+    pop = 2;
   }
 
   /* unary */
 
   else if (event == Ion::Events::Space) {
-    Expression *e = new Opposite((*m_rpnStack)[0].clone());
-    m_rpnStack->pop();
-    m_rpnStack->push(e);
+    e = new Opposite(m_rpnStack->exact(0));
+    pop = 1;
   }
   else if (event == Ion::Events::Sine) {
-    Expression *e = new Sine((*m_rpnStack)[0].clone());
-    m_rpnStack->pop();
-    m_rpnStack->push(e);
+    e = new Sine(m_rpnStack->exact(0));
+    pop = 1;
   }
   else if (event == Ion::Events::Cosine) {
-    Expression *e = new Cosine((*m_rpnStack)[0].clone());
-    m_rpnStack->pop();
-    m_rpnStack->push(e);
+    e = new Cosine(m_rpnStack->exact(0));
+    pop = 1;
   }
   else if (event == Ion::Events::Tangent) {
-    Expression *e = new Tangent((*m_rpnStack)[0].clone());
-    m_rpnStack->pop();
-    m_rpnStack->push(e);
+    e = new Tangent(m_rpnStack->exact(0));
+    pop = 1;
   }
   else if (event == Ion::Events::Arcsine) {
-    Expression *e = new ArcSine((*m_rpnStack)[0].clone());
-    m_rpnStack->pop();
-    m_rpnStack->push(e);
+    e = new ArcSine(m_rpnStack->exact(0));
+    pop = 1;
   }
   else if (event == Ion::Events::Arccosine) {
-    Expression *e = new ArcCosine((*m_rpnStack)[0].clone());
-    m_rpnStack->pop();
-    m_rpnStack->push(e);
+    e = new ArcCosine(m_rpnStack->exact(0));
+    pop = 1;
   }
   else if (event == Ion::Events::Arctangent) {
-    Expression *e = new ArcTangent((*m_rpnStack)[0].clone());
-    m_rpnStack->pop();
-    m_rpnStack->push(e);
+    e = new ArcTangent(m_rpnStack->exact(0));
+    pop = 1;
   }
   else if (event == Ion::Events::Ln) {
-    Expression *e = new NaperianLogarithm((*m_rpnStack)[0].clone());
-    m_rpnStack->pop();
-    m_rpnStack->push(e);
+    e = new NaperianLogarithm(m_rpnStack->exact(0));
+    pop = 1;
   }
   else if (event == Ion::Events::Log) {
-    Expression *e = new Logarithm((*m_rpnStack)[0].clone());
-    m_rpnStack->pop();
-    m_rpnStack->push(e);
+    e = new Logarithm(m_rpnStack->exact(0));
+    pop = 1;
   }
   else if (event == Ion::Events::Exp) {
-    Expression *e = new Power(Symbol(Ion::Charset::Exponential), (*m_rpnStack)[0].clone());
-    m_rpnStack->pop();
-    m_rpnStack->push(e);
+    e = new Power(Symbol(Ion::Charset::Exponential), m_rpnStack->exact(0));
+    pop = 1;
   }
   else if (event == Ion::Events::Sqrt) {
-    Expression *e = new SquareRoot((*m_rpnStack)[0].clone());
-    m_rpnStack->pop();
-    m_rpnStack->push(e);
+    e = new SquareRoot(m_rpnStack->exact(0));
+    pop = 1;
   }
   else if (event == Ion::Events::Square) {
-    Expression *e = new Power((*m_rpnStack)[0].clone(), Rational(2));
-    m_rpnStack->pop();
-    m_rpnStack->push(e);
+    e = new Power(m_rpnStack->exact(0), Rational(2));
+    pop = 1;
   }
   else {
     return false;
   }
+
+  while (pop--) {
+    m_rpnStack->pop();
+  }
+
+  m_rpnStack->push(*e, *((Rpn::App*) app())->localContext());
+  delete e;
 
   return true;
 }
@@ -283,7 +275,7 @@ bool RpnPromptController::pushInput() {
     return true;
   }
 
-  if (m_rpnStack->push(text)) {
+  if (m_rpnStack->push(text, *((Rpn::App*) app())->localContext())) {
     textField->setText("");
     textField->setCursorLocation(0);
     return true;
