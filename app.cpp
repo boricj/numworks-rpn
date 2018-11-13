@@ -49,5 +49,4 @@ App::App(Container * container, Snapshot * snapshot) :
 {
 }
 
-
 }

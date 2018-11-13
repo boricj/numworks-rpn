@@ -23,14 +23,18 @@ View * RpnStackController::view() {
 }
 
 bool RpnStackController::handleEvent(Ion::Events::Event event) {
+  int stackRow = m_rpnStack->length() - selectedRow() - 1;
   if (event == Ion::Events::Down) {
     app()->setFirstResponder(m_promptController);
     return true;
   }
   else if (event == Ion::Events::EXE || event == Ion::Events::OK) {
-    m_promptController->setText((*m_rpnStack)[m_rpnStack->length() - selectedRow() - 1]);
+    m_promptController->setText((*m_rpnStack)[stackRow]);
     app()->setFirstResponder(m_promptController);
     return true;
+  }
+  else if (event == Ion::Events::Copy) {
+    Clipboard::sharedClipboard()->store((*m_rpnStack)[stackRow]);
   }
 
   return false;

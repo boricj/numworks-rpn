@@ -160,6 +160,10 @@ bool RpnPromptController::handleEventSpecial(Ion::Events::Event event) {
     m_rpnStack->approximate = !m_rpnStack->approximate;
     handled = true;
   }
+  else if (event == Ion::Events::XNT) {
+    textField->handleEventWithText("x");
+    handled = true;
+  }
 
   return handled;
 }
