@@ -15,8 +15,6 @@ public:
   View * view() override;
   bool handleEvent(Ion::Events::Event event) override;
   void didBecomeFirstResponder() override;
-  void willResignFirstResponder() override;
-  void viewWillAppear() override;
 
   /* TextFieldDelegate */
   bool textFieldShouldFinishEditing(TextField * textField, Ion::Events::Event event) override;
@@ -58,6 +56,7 @@ public:
   bool handleEventOperation(Ion::Events::Event event);
   bool handleEventSpecial(Ion::Events::Event event);
 
+private:
   RpnStack *m_rpnStack;
   ContentView m_view;
   RpnStackController m_stackController;

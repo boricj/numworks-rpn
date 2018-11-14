@@ -41,6 +41,7 @@ public:
   void clear();
 
   int length() const { return m_length; }
+  bool full() const { return m_length >= k_stackSize; }
 
   bool approximate;
 

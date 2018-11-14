@@ -21,11 +21,10 @@ RpnPromptController::ContentView::~ContentView() {
 
 View * RpnPromptController::ContentView::subviewAtIndex(int index) {
   assert(index >= 0 && index < numberOfSubviews());
-  if (index == 0) {
-    return &m_mainView;
+  switch (index) {
+    case 0:  return &m_mainView;
+    default: return &m_promptView;
   }
-  assert(index == 1);
-  return &m_promptView;
 }
 
 void RpnPromptController::ContentView::layoutSubviews() {
@@ -33,8 +32,8 @@ void RpnPromptController::ContentView::layoutSubviews() {
   KDRect mainViewFrame(0, 0, bounds().width(), bounds().height() - inputViewFrameHeight);
   m_mainView.setFrame(mainViewFrame);
   KDRect inputViewFrame(0, bounds().height() - inputViewFrameHeight, bounds().width(), inputViewFrameHeight);
-  m_promptView.setFrame(inputViewFrame);
   m_promptView.setLeftMargin(4);
+  m_promptView.setFrame(inputViewFrame);
 }
 
 void RpnPromptController::ContentView::reload() {
@@ -57,17 +56,7 @@ View * RpnPromptController::view() {
 void RpnPromptController::didBecomeFirstResponder() {
   app()->setFirstResponder(m_view.promptView());
   m_view.promptView()->setEditing(true, false);
-  m_view.mainView()->scrollToCell(0, m_rpnStack->length()-1);
-  m_view.mainView()->deselectTable();
-}
-
-void RpnPromptController::willResignFirstResponder() {
-  m_view.promptView()->setEditing(false, false);
-}
-
-void RpnPromptController::viewWillAppear() {
-  m_view.promptView()->setEditing(true);
-  m_view.promptView()->setText("");
+  m_stackController.reloadAndScroll();
 }
 
 bool RpnPromptController::handleEvent(Ion::Events::Event event) {
@@ -75,18 +64,12 @@ bool RpnPromptController::handleEvent(Ion::Events::Event event) {
 }
 
 bool RpnPromptController::textFieldShouldFinishEditing(TextField * textField, Ion::Events::Event event) {
-  return event == Ion::Events::EXE || event == Ion::Events::OK || event == Ion::Events::Up;
+  return event == Ion::Events::EXE || event == Ion::Events::OK;
 }
 
 bool RpnPromptController::textFieldDidReceiveEvent(TextField * textField, Ion::Events::Event event) {
-  if (handleEventSpecial(event)) {
-    m_view.mainView()->reloadData(false);
-    m_view.mainView()->scrollToCell(0, m_rpnStack->length()-1);
-    return true;
-  }
-  else if (handleEventOperation(event)) {
-    m_view.mainView()->reloadData(false);
-    m_view.mainView()->scrollToCell(0, m_rpnStack->length()-1);
+  if (handleEventSpecial(event) || handleEventOperation(event)) {
+    m_stackController.reloadAndScroll();
     return true;
   }
 
@@ -94,25 +77,17 @@ bool RpnPromptController::textFieldDidReceiveEvent(TextField * textField, Ion::E
 }
 
 bool RpnPromptController::textFieldDidFinishEditing(TextField * textField, const char * text, Ion::Events::Event event) {
-  if (event == Ion::Events::EXE || event == Ion::Events::OK) {
-    if (pushInput()) {
-      m_view.mainView()->reloadData(false);
-      m_view.mainView()->scrollToCell(0, m_rpnStack->length()-1);
-      return false;
-    }
-    else {
-      return false;
-    }
+  if (pushInput()) {
+    m_stackController.reloadAndScroll();
+    return false;
   }
-  else if (event == Ion::Events::Up && m_rpnStack->length()) {
-    m_view.mainView()->selectCellAtLocation(0, m_rpnStack->length() - 1);
-    app()->setFirstResponder(m_view.mainView());
+  else {
+    return false;
   }
-  return false;
 }
 
 bool RpnPromptController::textFieldDidAbortEditing(TextField * textField) {
-  m_view.mainView()->selectCellAtLocation(0, m_rpnStack->length() - 1);
+  m_stackController.reloadAndScroll();
   app()->setFirstResponder(m_view.mainView());
   return true;
 }
@@ -132,36 +107,41 @@ bool RpnPromptController::handleEventSpecial(Ion::Events::Event event) {
       textField->setCursorLocation(0);
     }
     else {
-      m_rpnStack->clear();
+      m_stackController.clear();
     }
     handled = true;
   }
   else if (event == Ion::Events::Backspace && *text == '\0') {
-    m_rpnStack->pop();
+    m_stackController.pop();
     handled = true;
   }
   else if (event == Ion::Events::EXE && *text == '\0') {
-    m_rpnStack->dup();
+    m_stackController.dup();
     handled = true;
   }
   else if (event == Ion::Events::Ans) {
-    m_rpnStack->over();
+    m_stackController.over();
     handled = true;
   }
   else if (event == Ion::Events::RightParenthesis) {
-    m_rpnStack->swap();
+    m_stackController.swap();
     handled = true;
   }
   else if (event == Ion::Events::LeftParenthesis) {
-    m_rpnStack->rot();
+    m_stackController.rot();
     handled = true;
   }
   else if (event == Ion::Events::Equal) {
-    m_rpnStack->approximate = !m_rpnStack->approximate;
+    m_stackController.setApproximate(!m_stackController.approximate());
     handled = true;
   }
   else if (event == Ion::Events::XNT) {
     textField->handleEventWithText("x");
+    handled = true;
+  }
+  else if (event == Ion::Events::Up && !m_stackController.empty()) {
+    m_view.promptView()->setEditing(false, false);
+    app()->setFirstResponder(&m_stackController);
     handled = true;
   }
 
@@ -179,7 +159,7 @@ bool RpnPromptController::handleEventOperation(Ion::Events::Event event) {
   }
 
   if (!pushInput())
-    return false;
+    return true;
 
   /* binary */
 
@@ -187,74 +167,74 @@ bool RpnPromptController::handleEventOperation(Ion::Events::Event event) {
   int pop;
 
   if (event == Ion::Events::Plus) {
-    e = new Addition(m_rpnStack->exact(1), m_rpnStack->exact(0));
+    e = new Addition(m_stackController.exact(1), m_stackController.exact(0));
     pop = 2;
   }
   else if (event == Ion::Events::Minus) {
-    e = new Subtraction(m_rpnStack->exact(1), m_rpnStack->exact(0));
+    e = new Subtraction(m_stackController.exact(1), m_stackController.exact(0));
     pop = 2;
   }
   else if (event == Ion::Events::Multiplication) {
-    e = new Multiplication(m_rpnStack->exact(1), m_rpnStack->exact(0));
+    e = new Multiplication(m_stackController.exact(1), m_stackController.exact(0));
     pop = 2;
   }
   else if (event == Ion::Events::Division) {
-    e = new Division(m_rpnStack->exact(1), m_rpnStack->exact(0));
+    e = new Division(m_stackController.exact(1), m_stackController.exact(0));
     pop = 2;
   }
   else if (event == Ion::Events::Power) {
-    e = new Power(m_rpnStack->exact(1), m_rpnStack->exact(0));
+    e = new Power(m_stackController.exact(1), m_stackController.exact(0));
     pop = 2;
   }
 
   /* unary */
 
   else if (event == Ion::Events::Space) {
-    e = new Opposite(m_rpnStack->exact(0));
+    e = new Opposite(m_stackController.exact(0));
     pop = 1;
   }
   else if (event == Ion::Events::Sine) {
-    e = new Sine(m_rpnStack->exact(0));
+    e = new Sine(m_stackController.exact(0));
     pop = 1;
   }
   else if (event == Ion::Events::Cosine) {
-    e = new Cosine(m_rpnStack->exact(0));
+    e = new Cosine(m_stackController.exact(0));
     pop = 1;
   }
   else if (event == Ion::Events::Tangent) {
-    e = new Tangent(m_rpnStack->exact(0));
+    e = new Tangent(m_stackController.exact(0));
     pop = 1;
   }
   else if (event == Ion::Events::Arcsine) {
-    e = new ArcSine(m_rpnStack->exact(0));
+    e = new ArcSine(m_stackController.exact(0));
     pop = 1;
   }
   else if (event == Ion::Events::Arccosine) {
-    e = new ArcCosine(m_rpnStack->exact(0));
+    e = new ArcCosine(m_stackController.exact(0));
     pop = 1;
   }
   else if (event == Ion::Events::Arctangent) {
-    e = new ArcTangent(m_rpnStack->exact(0));
+    e = new ArcTangent(m_stackController.exact(0));
     pop = 1;
   }
   else if (event == Ion::Events::Ln) {
-    e = new NaperianLogarithm(m_rpnStack->exact(0));
+    e = new NaperianLogarithm(m_stackController.exact(0));
     pop = 1;
   }
   else if (event == Ion::Events::Log) {
-    e = new Logarithm(m_rpnStack->exact(0));
+    e = new Logarithm(m_stackController.exact(0));
     pop = 1;
   }
   else if (event == Ion::Events::Exp) {
-    e = new Power(Symbol(Ion::Charset::Exponential), m_rpnStack->exact(0));
+    e = new Power(Symbol(Ion::Charset::Exponential), m_stackController.exact(0));
     pop = 1;
   }
   else if (event == Ion::Events::Sqrt) {
-    e = new SquareRoot(m_rpnStack->exact(0));
+    e = new SquareRoot(m_stackController.exact(0));
     pop = 1;
   }
   else if (event == Ion::Events::Square) {
-    e = new Power(m_rpnStack->exact(0), Rational(2));
+    e = new Power(m_stackController.exact(0), Rational(2));
     pop = 1;
   }
   else {
@@ -262,10 +242,10 @@ bool RpnPromptController::handleEventOperation(Ion::Events::Event event) {
   }
 
   while (pop--) {
-    m_rpnStack->pop();
+    m_stackController.pop();
   }
 
-  m_rpnStack->push(*e, *((Rpn::App*) app())->localContext());
+  m_stackController.push(*e, *((Rpn::App*) app())->localContext());
   delete e;
 
   return true;
@@ -279,13 +259,12 @@ bool RpnPromptController::pushInput() {
     return true;
   }
 
-  if (m_rpnStack->push(text, *((Rpn::App*) app())->localContext())) {
+  if (m_stackController.push(text, *((Rpn::App*) app())->localContext())) {
     textField->setText("");
     textField->setCursorLocation(0);
     return true;
   }
   else {
-    app()->displayWarning(I18n::Message::SyntaxError);
     return false;
   }
 }
