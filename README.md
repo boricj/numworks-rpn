@@ -11,7 +11,7 @@ git clone https://github.com/boricj/numworks-rpn.git apps/rpn
 make PLATFORM=simulator EPSILON_APPS='rpn settings'
 
 # Complete firmware on hardware
-make EPSILON_APPS='rpn graph code statistics probability solver calculation sequence regression settings'
+make EPSILON_APPS='rpn graph code statistics probability solver calculation sequence regression settings' epsilon_flash
 ```
 
 ## Key mapping
