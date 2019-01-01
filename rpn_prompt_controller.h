@@ -22,7 +22,6 @@ public:
   bool textFieldDidFinishEditing(TextField * textField, const char * text, Ion::Events::Event event) override;
   bool textFieldDidAbortEditing(TextField * textField) override;
   bool textFieldDidHandleEvent(TextField * textField, bool returnValue, bool textHasChanged) override;
-  Toolbox * toolboxForTextInput(TextInput * textInput) override { return nullptr; }
 
   bool pushInput();
   void setText(const char *text);

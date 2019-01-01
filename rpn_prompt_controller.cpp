@@ -11,7 +11,7 @@ namespace Rpn {
 RpnPromptController::ContentView::ContentView(Responder * parentResponder, RpnStackController * stackController, TextFieldDelegate * delegate) :
   View(),
   m_mainView(stackController, stackController, stackController),
-  m_promptView(parentResponder, m_textBuffer, m_textBuffer, sizeof(m_textBuffer), delegate, false, KDFont::LargeFont),
+  m_promptView(parentResponder, m_textBuffer, m_textBuffer, sizeof(m_textBuffer), nullptr, delegate, false, KDFont::LargeFont),
   m_textBuffer("")
 {
 }
@@ -163,78 +163,78 @@ bool RpnPromptController::handleEventOperation(Ion::Events::Event event) {
 
   /* binary */
 
-  Expression *e = nullptr;
+  Expression e;
   int pop;
 
   if (event == Ion::Events::Plus) {
-    e = new Addition(m_stackController.exact(1), m_stackController.exact(0));
+    e = Addition(m_stackController.exact(1), m_stackController.exact(0));
     pop = 2;
   }
   else if (event == Ion::Events::Minus) {
-    e = new Subtraction(m_stackController.exact(1), m_stackController.exact(0));
+    e = Subtraction(m_stackController.exact(1), m_stackController.exact(0));
     pop = 2;
   }
   else if (event == Ion::Events::Multiplication) {
-    e = new Multiplication(m_stackController.exact(1), m_stackController.exact(0));
+    e = Multiplication(m_stackController.exact(1), m_stackController.exact(0));
     pop = 2;
   }
   else if (event == Ion::Events::Division) {
-    e = new Division(m_stackController.exact(1), m_stackController.exact(0));
+    e = Division(m_stackController.exact(1), m_stackController.exact(0));
     pop = 2;
   }
   else if (event == Ion::Events::Power) {
-    e = new Power(m_stackController.exact(1), m_stackController.exact(0));
+    e = Power(m_stackController.exact(1), m_stackController.exact(0));
     pop = 2;
   }
 
   /* unary */
 
   else if (event == Ion::Events::Space) {
-    e = new Opposite(m_stackController.exact(0));
+    e = Opposite(m_stackController.exact(0));
     pop = 1;
   }
   else if (event == Ion::Events::Sine) {
-    e = new Sine(m_stackController.exact(0));
+    e = Sine::UntypedBuilder(m_stackController.exactCombine(1));
     pop = 1;
   }
   else if (event == Ion::Events::Cosine) {
-    e = new Cosine(m_stackController.exact(0));
+    e = Cosine::UntypedBuilder(m_stackController.exactCombine(1));
     pop = 1;
   }
   else if (event == Ion::Events::Tangent) {
-    e = new Tangent(m_stackController.exact(0));
+    e = Tangent::UntypedBuilder(m_stackController.exactCombine(1));
     pop = 1;
   }
   else if (event == Ion::Events::Arcsine) {
-    e = new ArcSine(m_stackController.exact(0));
+    e = ArcSine::UntypedBuilder(m_stackController.exactCombine(1));
     pop = 1;
   }
   else if (event == Ion::Events::Arccosine) {
-    e = new ArcCosine(m_stackController.exact(0));
+    e = ArcCosine::UntypedBuilder(m_stackController.exactCombine(1));
     pop = 1;
   }
   else if (event == Ion::Events::Arctangent) {
-    e = new ArcTangent(m_stackController.exact(0));
+    e = ArcTangent::UntypedBuilder(m_stackController.exactCombine(1));
     pop = 1;
   }
   else if (event == Ion::Events::Ln) {
-    e = new NaperianLogarithm(m_stackController.exact(0));
+    e = NaperianLogarithm::UntypedBuilder(m_stackController.exactCombine(1));
     pop = 1;
   }
   else if (event == Ion::Events::Log) {
-    e = new Logarithm(m_stackController.exact(0));
+    e = CommonLogarithm::UntypedBuilder(m_stackController.exactCombine(1));
     pop = 1;
   }
   else if (event == Ion::Events::Exp) {
-    e = new Power(Symbol(Ion::Charset::Exponential), m_stackController.exact(0));
+    e = Power(Symbol(Ion::Charset::Exponential), m_stackController.exact(0));
     pop = 1;
   }
   else if (event == Ion::Events::Sqrt) {
-    e = new SquareRoot(m_stackController.exact(0));
+    e = SquareRoot::UntypedBuilder(m_stackController.exactCombine(1));
     pop = 1;
   }
   else if (event == Ion::Events::Square) {
-    e = new Power(m_stackController.exact(0), Rational(2));
+    e = Power(m_stackController.exact(0), Rational(2));
     pop = 1;
   }
   else {
@@ -245,8 +245,7 @@ bool RpnPromptController::handleEventOperation(Ion::Events::Event event) {
     m_stackController.pop();
   }
 
-  m_stackController.push(*e, *((Rpn::App*) app())->localContext());
-  delete e;
+  m_stackController.push(e, *((Rpn::App*) app())->localContext());
 
   return true;
 }

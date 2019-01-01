@@ -5,6 +5,7 @@
 #include "../i18n.h"
 #include "../shared/poincare_helpers.h"
 #include <assert.h>
+#include <poincare_nodes.h>
 
 using namespace Poincare;
 
@@ -157,10 +158,18 @@ void RpnStackController::clear() {
 
 bool RpnStackController::isFull() {
   if (m_rpnStack->full()) {
-    app()->displayWarning(I18n::Message::AppMemoryFull);
+    app()->displayWarning(I18n::Message::StorageMemoryFull1, I18n::Message::StorageMemoryFull2, true);
     return true;
   }
   return false;
+}
+
+Poincare::Expression RpnStackController::exactCombine(size_t number) {
+  Poincare::Matrix e;
+  for (size_t i = 0; i < number; i++) {
+    e.addChildAtIndexInPlace(exact(number-i-1), i, i);
+  }
+  return e;
 }
 
 void RpnStackController::reloadAndScroll(int index) {

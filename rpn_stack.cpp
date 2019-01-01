@@ -31,11 +31,11 @@ RpnStack::RpnElement::RpnElement(Poincare::Expression &exp, Poincare::Context &c
 }
 
 Poincare::Expression RpnStack::exact(size_t idx) const {
-  return Poincare::Expression::parse(m_stack[idx].expression);
+  return Poincare::Expression::Parse(m_stack[idx].expression);
 }
 
 Poincare::Expression RpnStack::expression(size_t idx) const {
-  return Poincare::Expression::parse((*this)[idx]);
+  return Poincare::Expression::Parse((*this)[idx]);
 }
 
 void RpnStack::dup() {
@@ -70,7 +70,7 @@ void RpnStack::over() {
 }
 
 bool RpnStack::push(const char *text, Poincare::Context &context) {
-  Poincare::Expression exp = Poincare::Expression::parse(text);
+  Poincare::Expression exp = Poincare::Expression::Parse(text);
   if (exp.isUninitialized()) {
     return false;
   }
