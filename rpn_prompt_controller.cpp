@@ -1,6 +1,5 @@
 #include "rpn_prompt_controller.h"
 #include "app.h"
-#include "../i18n.h"
 #include <assert.h>
 #include <poincare_nodes.h>
 
@@ -54,8 +53,8 @@ View * RpnPromptController::view() {
 }
 
 void RpnPromptController::didBecomeFirstResponder() {
-  app()->setFirstResponder(m_view.promptView());
-  m_view.promptView()->setEditing(true, false);
+  Container::activeApp()->setFirstResponder(m_view.promptView());
+  m_view.promptView()->setEditing(true);
   m_stackController.reloadAndScroll();
 }
 
@@ -88,7 +87,7 @@ bool RpnPromptController::textFieldDidFinishEditing(TextField * textField, const
 
 bool RpnPromptController::textFieldDidAbortEditing(TextField * textField) {
   m_stackController.reloadAndScroll();
-  app()->setFirstResponder(m_view.mainView());
+  Container::activeApp()->setFirstResponder(m_view.mainView());
   return true;
 }
 
@@ -104,7 +103,7 @@ bool RpnPromptController::handleEventSpecial(Ion::Events::Event event) {
   if (event == Ion::Events::Clear) {
     if (textField->isEditing() && *text) {
       textField->setText("");
-      textField->setCursorLocation(0);
+      textField->setCursorLocation(textField->text());
     }
     else {
       m_stackController.clear();
@@ -140,8 +139,8 @@ bool RpnPromptController::handleEventSpecial(Ion::Events::Event event) {
     handled = true;
   }
   else if (event == Ion::Events::Up && !m_stackController.empty()) {
-    m_view.promptView()->setEditing(false, false);
-    app()->setFirstResponder(&m_stackController);
+    m_view.promptView()->setEditing(false);
+    Container::activeApp()->setFirstResponder(&m_stackController);
     handled = true;
   }
 
@@ -167,74 +166,74 @@ bool RpnPromptController::handleEventOperation(Ion::Events::Event event) {
   int pop;
 
   if (event == Ion::Events::Plus) {
-    e = Addition(m_stackController.exact(1), m_stackController.exact(0));
+    e = Addition::Builder(m_stackController.exact(1), m_stackController.exact(0));
     pop = 2;
   }
   else if (event == Ion::Events::Minus) {
-    e = Subtraction(m_stackController.exact(1), m_stackController.exact(0));
+    e = Subtraction::Builder(m_stackController.exact(1), m_stackController.exact(0));
     pop = 2;
   }
   else if (event == Ion::Events::Multiplication) {
-    e = Multiplication(m_stackController.exact(1), m_stackController.exact(0));
+    e = Multiplication::Builder(m_stackController.exact(1), m_stackController.exact(0));
     pop = 2;
   }
   else if (event == Ion::Events::Division) {
-    e = Division(m_stackController.exact(1), m_stackController.exact(0));
+    e = Division::Builder(m_stackController.exact(1), m_stackController.exact(0));
     pop = 2;
   }
   else if (event == Ion::Events::Power) {
-    e = Power(m_stackController.exact(1), m_stackController.exact(0));
+    e = Power::Builder(m_stackController.exact(1), m_stackController.exact(0));
     pop = 2;
   }
 
   /* unary */
 
   else if (event == Ion::Events::Space) {
-    e = Opposite(m_stackController.exact(0));
+    e = Opposite::Builder(m_stackController.exact(0));
     pop = 1;
   }
   else if (event == Ion::Events::Sine) {
-    e = Sine::UntypedBuilder(m_stackController.exactCombine(1));
+    e = Sine::Builder(m_stackController.exact(0));
     pop = 1;
   }
   else if (event == Ion::Events::Cosine) {
-    e = Cosine::UntypedBuilder(m_stackController.exactCombine(1));
+    e = Cosine::Builder(m_stackController.exact(0));
     pop = 1;
   }
   else if (event == Ion::Events::Tangent) {
-    e = Tangent::UntypedBuilder(m_stackController.exactCombine(1));
+    e = Tangent::Builder(m_stackController.exact(0));
     pop = 1;
   }
   else if (event == Ion::Events::Arcsine) {
-    e = ArcSine::UntypedBuilder(m_stackController.exactCombine(1));
+    e = ArcSine::Builder(m_stackController.exact(0));
     pop = 1;
   }
   else if (event == Ion::Events::Arccosine) {
-    e = ArcCosine::UntypedBuilder(m_stackController.exactCombine(1));
+    e = ArcCosine::Builder(m_stackController.exact(0));
     pop = 1;
   }
   else if (event == Ion::Events::Arctangent) {
-    e = ArcTangent::UntypedBuilder(m_stackController.exactCombine(1));
+    e = ArcTangent::Builder(m_stackController.exact(0));
     pop = 1;
   }
   else if (event == Ion::Events::Ln) {
-    e = NaperianLogarithm::UntypedBuilder(m_stackController.exactCombine(1));
+    e = NaperianLogarithm::Builder(m_stackController.exact(0));
     pop = 1;
   }
   else if (event == Ion::Events::Log) {
-    e = CommonLogarithm::UntypedBuilder(m_stackController.exactCombine(1));
+    e = CommonLogarithm::Builder(m_stackController.exact(0));
     pop = 1;
   }
   else if (event == Ion::Events::Exp) {
-    e = Power(Symbol(Ion::Charset::Exponential), m_stackController.exact(0));
+    e = Power::Builder(Constant::Builder(UCodePointScriptSmallE), m_stackController.exact(0));
     pop = 1;
   }
   else if (event == Ion::Events::Sqrt) {
-    e = SquareRoot::UntypedBuilder(m_stackController.exactCombine(1));
+    e = SquareRoot::Builder(m_stackController.exact(0));
     pop = 1;
   }
   else if (event == Ion::Events::Square) {
-    e = Power(m_stackController.exact(0), Rational(2));
+    e = Power::Builder(m_stackController.exact(0), Rational::Builder(2));
     pop = 1;
   }
   else {
@@ -245,7 +244,7 @@ bool RpnPromptController::handleEventOperation(Ion::Events::Event event) {
     m_stackController.pop();
   }
 
-  m_stackController.push(e, *((Rpn::App*) app())->localContext());
+  m_stackController.push(e, *((Rpn::App*) Container::activeApp())->localContext());
 
   return true;
 }
@@ -258,9 +257,9 @@ bool RpnPromptController::pushInput() {
     return true;
   }
 
-  if (m_stackController.push(text, *((Rpn::App*) app())->localContext())) {
+  if (m_stackController.push(text, *((Rpn::App*) Container::activeApp())->localContext())) {
     textField->setText("");
-    textField->setCursorLocation(0);
+    textField->setCursorLocation(textField->text());
     return true;
   }
   else {

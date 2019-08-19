@@ -39,7 +39,6 @@ public:
   bool full() { return m_rpnStack->full(); }
   bool empty() { return m_rpnStack->length() == 0; }
   Poincare::Expression exact(size_t index) { return m_rpnStack->exact(index); }
-  Poincare::Expression exactCombine(size_t number);
   void reloadAndScroll(int index = -1);
 
   constexpr static int k_padding = 4;

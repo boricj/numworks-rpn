@@ -1,11 +1,11 @@
 apps += Rpn::App
 app_headers += apps/rpn/app.h
 
-app_objs += $(addprefix apps/rpn/,\
-  app.o\
-  rpn_prompt_controller.o\
-  rpn_stack_controller.o\
-  rpn_stack.o\
+app_src += $(addprefix apps/rpn/,\
+  app.cpp\
+  rpn_prompt_controller.cpp\
+  rpn_stack_controller.cpp\
+  rpn_stack.cpp\
 )
 
 i18n_files += $(addprefix apps/rpn/,\
@@ -16,4 +16,5 @@ i18n_files += $(addprefix apps/rpn/,\
   base.pt.i18n\
 )
 
-app_images += apps/rpn/rpn_icon.png
+$(eval $(call depends_on_image,apps/rpn/app.cpp,apps/rpn/rpn_icon.png))
+

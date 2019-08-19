@@ -1,6 +1,5 @@
 #include "rpn_stack.h"
 #include "../shared/poincare_helpers.h"
-#include "ion/charset.h"
 #include <string.h>
 #include <poincare_nodes.h>
 #include <poincare/preferences.h>

@@ -44,7 +44,7 @@ void App::Snapshot::reset() {
 }
 
 App::App(Container * container, Snapshot * snapshot) :
-  Shared::TextFieldDelegateApp(container, snapshot, &m_rpnPromptController),
+  Shared::TextFieldDelegateApp(snapshot, &m_rpnPromptController),
   m_rpnPromptController(this, snapshot->rpnStack())
 {
 }

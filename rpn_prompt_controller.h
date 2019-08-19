@@ -26,9 +26,6 @@ public:
   bool pushInput();
   void setText(const char *text);
 
-Shared::TextFieldDelegateApp * textFieldDelegateApp() override {
-  return (Shared::TextFieldDelegateApp *)app();
-}
 public:
   class ContentView : public View {
   public:

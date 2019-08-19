@@ -2,7 +2,6 @@
 #include "rpn_stack_controller.h"
 #include "app.h"
 #include "rpn_prompt_controller.h"
-#include "../i18n.h"
 #include "../shared/poincare_helpers.h"
 #include <assert.h>
 #include <poincare_nodes.h>
@@ -32,13 +31,13 @@ bool RpnStackController::handleEvent(Ion::Events::Event event) {
   int stackRow = m_rpnStack->length() - selectedRow() - 1;
   if (event == Ion::Events::Down) {
     m_view->deselectTable();
-    app()->setFirstResponder(m_promptController);
+    Container::activeApp()->setFirstResponder(m_promptController);
     return true;
   }
   else if (event == Ion::Events::EXE || event == Ion::Events::OK) {
     m_view->deselectTable();
     m_promptController->setText((*m_rpnStack)[stackRow]);
-    app()->setFirstResponder(m_promptController);
+    Container::activeApp()->setFirstResponder(m_promptController);
     return true;
   }
   else if (event == Ion::Events::Clear) {
@@ -60,10 +59,10 @@ bool RpnStackController::handleEvent(Ion::Events::Event event) {
     }
     #endif
     for (int i = stackRow - 1; i >= 0; i--) {
-      push(backup[i], *((Rpn::App*) app())->localContext());
+      push(backup[i], *((Rpn::App*) Container::activeApp())->localContext());
     }
     if (empty()) {
-      app()->setFirstResponder(m_promptController);
+      Container::activeApp()->setFirstResponder(m_promptController);
     }
     else {
       reloadAndScroll();
@@ -126,7 +125,7 @@ bool RpnStackController::push(const char *text, Poincare::Context &context) {
     return false;
   }
   if (!m_rpnStack->push(text, context)) {
-    app()->displayWarning(I18n::Message::SyntaxError);
+    Container::activeApp()->displayWarning(I18n::Message::SyntaxError);
     return false;
   }
   reloadAndScroll();
@@ -158,18 +157,10 @@ void RpnStackController::clear() {
 
 bool RpnStackController::isFull() {
   if (m_rpnStack->full()) {
-    app()->displayWarning(I18n::Message::StorageMemoryFull1, I18n::Message::StorageMemoryFull2, true);
+    Container::activeApp()->displayWarning(I18n::Message::StorageMemoryFull1, I18n::Message::StorageMemoryFull2, true);
     return true;
   }
   return false;
-}
-
-Poincare::Expression RpnStackController::exactCombine(size_t number) {
-  Poincare::Matrix e;
-  for (size_t i = 0; i < number; i++) {
-    e.addChildAtIndexInPlace(exact(number-i-1), i, i);
-  }
-  return e;
 }
 
 void RpnStackController::reloadAndScroll(int index) {
