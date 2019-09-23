@@ -10,7 +10,7 @@ RpnStack::RpnElement::RpnElement() : expression("0"), approximate("0"), expressi
 }
 
 RpnStack::RpnElement::RpnElement(Poincare::Expression &exp, Poincare::Context &context) {
-  Poincare::Expression exact = exp.simplify(context, Poincare::Preferences::sharedPreferences()->complexFormat(), Poincare::Preferences::sharedPreferences()->angleUnit());
+  Poincare::Expression exact = exp.simplify(&context, Poincare::Preferences::sharedPreferences()->complexFormat(), Poincare::Preferences::sharedPreferences()->angleUnit());
   exact.serialize(expression, k_expressionSize);
   expressionHeight = exact.createLayout(
     Poincare::Preferences::sharedPreferences()->displayMode(),
@@ -18,7 +18,7 @@ RpnStack::RpnElement::RpnElement(Poincare::Expression &exp, Poincare::Context &c
   ).layoutSize().height();
 
   Poincare::Expression approx = exact.approximate<double>(
-    context,
+    &context,
     Poincare::Preferences::sharedPreferences()->complexFormat(),
     Poincare::Preferences::sharedPreferences()->angleUnit()
   );

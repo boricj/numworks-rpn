@@ -10,7 +10,7 @@ namespace Rpn {
 RpnPromptController::ContentView::ContentView(Responder * parentResponder, RpnStackController * stackController, TextFieldDelegate * delegate) :
   View(),
   m_mainView(stackController, stackController, stackController),
-  m_promptView(parentResponder, m_textBuffer, m_textBuffer, sizeof(m_textBuffer), nullptr, delegate, false, KDFont::LargeFont),
+  m_promptView(parentResponder, m_textBuffer, sizeof(m_textBuffer), sizeof(m_textBuffer), nullptr, delegate, KDFont::LargeFont),
   m_textBuffer("")
 {
 }
@@ -251,15 +251,14 @@ bool RpnPromptController::handleEventOperation(Ion::Events::Event event) {
 
 bool RpnPromptController::pushInput() {
   TextField *textField = m_view.promptView();
-  const char *text = textField->text();
+  const char *text = textField->draftTextBuffer();
 
   if (*text == '\0') {
     return true;
   }
 
   if (m_stackController.push(text, *((Rpn::App*) Container::activeApp())->localContext())) {
-    textField->setText("");
-    textField->setCursorLocation(textField->text());
+    textField->reinitDraftTextBuffer();
     return true;
   }
   else {

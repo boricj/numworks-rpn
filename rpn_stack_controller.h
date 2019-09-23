@@ -16,7 +16,7 @@ public:
 
   bool handleEvent(Ion::Events::Event event) override;
 
-  int numberOfRows() override { return m_rpnStack->length(); }
+  int numberOfRows() const override { return m_rpnStack->length(); }
   KDCoordinate rowHeight(int i) override;
   HighlightCell * reusableCell(int index, int type) override { return &m_cells[index]; }
   int reusableCellCount(int type) { return RpnStack::k_stackSize; };
