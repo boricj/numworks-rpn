@@ -85,12 +85,12 @@ bool InputController::handleEventSpecial(Ion::Events::Event event, TextField * v
   }
   else if (event == Ion::Events::Exp) {
     if (pushInput()) {
-      r = (*m_stackController)(Stack::Exp, ((Rpn::App*) Container::activeApp())->localContext());
+      r = (*m_stackController)(Stack::Exp);
     }
   }
   else if (event == Ion::Events::Log) {
     if (pushInput()) {
-      r = (*m_stackController)(Stack::CommonLogarithm, ((Rpn::App*) Container::activeApp())->localContext());
+      r = (*m_stackController)(Stack::CommonLogarithm);
     }
   }
   else if (event == Ion::Events::Equal) {
@@ -98,7 +98,7 @@ bool InputController::handleEventSpecial(Ion::Events::Event event, TextField * v
   }
   else if (event == Ion::Events::Square) {
     if (pushInput()) {
-      r = (*m_stackController)(Stack::Square, ((Rpn::App*) Container::activeApp())->localContext());
+      r = (*m_stackController)(Stack::Square);
     }
   }
   else if (event == Ion::Events::RightParenthesis) {
@@ -157,7 +157,7 @@ bool InputController::handleEventOperation(Ion::Events::Event event, TextField *
   for (size_t i = 0; i < sizeof(events2types)/sizeof(events2types[0]); i++) {
     if (events2types[i].event == event) {
       if (pushInput()) {
-        auto r = (*m_stack)(events2types[i].op, ((Rpn::App*) Container::activeApp())->localContext());
+        auto r = (*m_stackController)(events2types[i].op);
         if (r != I18n::Message::Default) {
           Container::activeApp()->displayWarning(r);
         }
@@ -176,7 +176,7 @@ bool InputController::pushInput() {
     return true;
   }
 
-  auto r = (*m_stack)(text, ((Rpn::App*) Container::activeApp())->localContext());
+  auto r = (*m_stackController)(text);
   if (r == I18n::Message::Default) {
     inputView()->setText("");
     inputView()->setCursorLocation(inputView()->text());

@@ -35,7 +35,6 @@ private:
   StackController m_stackController;
   InputController m_inputController;
   ContentView m_view;
-  
 };
 
 }

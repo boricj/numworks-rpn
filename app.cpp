@@ -44,7 +44,7 @@ void App::Snapshot::reset() {
 
 App::App(Snapshot * snapshot) :
   Shared::TextFieldDelegateApp(snapshot, &m_inputController),
-  m_stackController(this, snapshot->stack(), &m_inputController, &m_view),
+  m_stackController(this, snapshot->stack(), &m_inputController, &m_view, localContext()),
   m_inputController(this, snapshot->stack(), &m_stackController, &m_view),
   m_view(this, &m_inputController, &m_stackController)
 {

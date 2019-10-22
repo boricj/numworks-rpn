@@ -4,6 +4,7 @@
 #include <escher.h>
 
 #include "../shared/text_field_delegate.h"
+#include "../shared/input_event_handler_delegate.h"
 //#include "rpn_input_field.h"
 #include "rpn_stack_controller.h"
 #include "rpn_stack.h"
@@ -12,7 +13,7 @@ namespace Rpn {
 class ContentView;
 class StackController;
 
-class InputController : public ViewController, public Shared::TextFieldDelegate {
+class InputController : public ViewController, public Shared::TextFieldDelegate, public Shared::InputEventHandlerDelegate {
 public:
   InputController(Responder * parentResponder, Stack * stack, StackController * stackController, ContentView * view);
   View * view() override;

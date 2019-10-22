@@ -7,7 +7,7 @@ namespace Rpn {
 ContentView::ContentView(Responder * parentResponder, InputController * inputController, StackController * stackController) :
   View(),
   m_stackView(stackController, stackController, stackController),
-  m_inputView(parentResponder, m_textBuffer, sizeof(m_textBuffer), sizeof(m_textBuffer), nullptr, inputController, KDFont::LargeFont),
+  m_inputView(parentResponder, m_textBuffer, sizeof(m_textBuffer), sizeof(m_textBuffer), inputController, inputController, KDFont::LargeFont),
   m_textBuffer("")
 {
 }

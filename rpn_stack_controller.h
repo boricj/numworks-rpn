@@ -11,7 +11,7 @@ namespace Rpn {
 
 class StackController : public ViewController, public ListViewDataSource, public SelectableTableViewDataSource {
 public:
-  StackController(Responder * parentResponder, Stack * stack, InputController * inputController, ContentView * view);
+  StackController(Responder * parentResponder, Stack * stack, InputController * inputController, ContentView * view, Poincare::Context *context);
   View * view() override;
   void didBecomeFirstResponder() override;
 
@@ -34,10 +34,10 @@ public:
 
   bool empty() { return m_stack->empty(); }
 
-  I18n::Message operator()(const char* text, Poincare::Context *context);
+  I18n::Message operator()(const char* text);
   I18n::Message operator()(Stack::StackOperation op);
-  I18n::Message operator()(Stack::SpecialOperation op, Poincare::Context *context);
-  I18n::Message operator()(Poincare::ExpressionNode::Type op, Poincare::Context *context);
+  I18n::Message operator()(Stack::SpecialOperation op);
+  I18n::Message operator()(Poincare::ExpressionNode::Type op);
 
   SelectableTableView* stackView();
 
@@ -49,6 +49,7 @@ private:
   Stack * m_stack;
   InputController * m_inputController;
   ContentView * m_view;
+  Poincare::Context * m_context;
   EvenOddExpressionCell m_cells[Stack::k_stackSize];
 };
 

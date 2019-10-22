@@ -10,11 +10,12 @@ using namespace Poincare;
 
 namespace Rpn {
 
-StackController::StackController(Responder * parentResponder, Stack * Stack, InputController * inputController, ContentView * view) :
+StackController::StackController(Responder * parentResponder, Stack * Stack, InputController * inputController, ContentView * view, Poincare::Context *context) :
   ViewController(parentResponder),
   m_stack(Stack),
   m_inputController(inputController),
-  m_view(view)
+  m_view(view),
+  m_context(context)
 {
 }
 
@@ -69,8 +70,8 @@ SelectableTableView* StackController::stackView() {
 }
 
 
-I18n::Message StackController::operator()(const char* text, Poincare::Context *context) {
-  auto r = (*m_stack)(text, context);
+I18n::Message StackController::operator()(const char* text) {
+  auto r = (*m_stack)(text, m_context);
   if (r != I18n::Message::Default) {
     reloadAndScroll();
   }
@@ -85,16 +86,16 @@ I18n::Message StackController::operator()(Stack::StackOperation op) {
   return r;
 }
 
-I18n::Message StackController::operator()(Stack::SpecialOperation op, Poincare::Context *context) {
-  auto r = (*m_stack)(op, context);
+I18n::Message StackController::operator()(Stack::SpecialOperation op) {
+  auto r = (*m_stack)(op, m_context);
   if (r != I18n::Message::Default) {
     reloadAndScroll();
   }
   return r;
 }
 
-I18n::Message StackController::operator()(Poincare::ExpressionNode::Type op, Poincare::Context *context) {
-  auto r = (*m_stack)(op, context);
+I18n::Message StackController::operator()(Poincare::ExpressionNode::Type op) {
+  auto r = (*m_stack)(op, m_context);
   if (r != I18n::Message::Default) {
     reloadAndScroll();
   }
