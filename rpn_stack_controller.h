@@ -38,6 +38,7 @@ public:
   I18n::Message operator()(Stack::StackOperation op);
   I18n::Message operator()(Stack::SpecialOperation op);
   I18n::Message operator()(Poincare::ExpressionNode::Type op);
+  I18n::Message operator()(I18n::Message op);
 
   SelectableTableView* stackView();
 

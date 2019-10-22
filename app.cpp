@@ -4,6 +4,8 @@
 #include "apps/i18n.h"
 #include <assert.h>
 
+extern const ToolboxMessageTree *toolboxModel;
+
 namespace Rpn {
 
 I18n::Message App::Descriptor::name() {
@@ -46,8 +48,13 @@ App::App(Snapshot * snapshot) :
   Shared::TextFieldDelegateApp(snapshot, &m_inputController),
   m_stackController(this, snapshot->stack(), &m_inputController, &m_view, localContext()),
   m_inputController(this, snapshot->stack(), &m_stackController, &m_view),
-  m_view(this, &m_inputController, &m_stackController)
+  m_view(this, &m_inputController, &m_stackController),
+  m_toolbox(AppsContainer::sharedAppsContainer()->mathToolbox()->rootModel(), &m_inputController, &m_stackController)
 {
+}
+
+::Toolbox * App::toolboxForInputEventHandler(InputEventHandler * textInput) {
+  return &m_toolbox;
 }
 
 }

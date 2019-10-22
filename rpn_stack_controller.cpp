@@ -80,7 +80,7 @@ I18n::Message StackController::operator()(const char* text) {
 
 I18n::Message StackController::operator()(Stack::StackOperation op) {
   auto r = (*m_stack)(op);
-  if (r != I18n::Message::Default) {
+  if (r == I18n::Message::Default) {
     reloadAndScroll();
   }
   return r;
@@ -88,7 +88,7 @@ I18n::Message StackController::operator()(Stack::StackOperation op) {
 
 I18n::Message StackController::operator()(Stack::SpecialOperation op) {
   auto r = (*m_stack)(op, m_context);
-  if (r != I18n::Message::Default) {
+  if (r == I18n::Message::Default) {
     reloadAndScroll();
   }
   return r;
@@ -96,7 +96,15 @@ I18n::Message StackController::operator()(Stack::SpecialOperation op) {
 
 I18n::Message StackController::operator()(Poincare::ExpressionNode::Type op) {
   auto r = (*m_stack)(op, m_context);
-  if (r != I18n::Message::Default) {
+  if (r == I18n::Message::Default) {
+    reloadAndScroll();
+  }
+  return r;
+}
+
+I18n::Message StackController::operator()(I18n::Message op) {
+  auto r = (*m_stack)(op, m_context);
+  if (r == I18n::Message::Default) {
     reloadAndScroll();
   }
   return r;

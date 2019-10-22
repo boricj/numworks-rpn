@@ -50,6 +50,7 @@ public:
   I18n::Message operator()(StackOperation op);
   I18n::Message operator()(SpecialOperation op, Poincare::Context *context);
   I18n::Message operator()(Poincare::ExpressionNode::Type op, Poincare::Context *context);
+  I18n::Message operator()(I18n::Message op, Poincare::Context *context);
 
   int length() const { return m_length; }
   bool full() const { return m_length == k_stackSize; }

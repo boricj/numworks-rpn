@@ -115,7 +115,7 @@ I18n::Message Stack::operator()(ExpressionNode::Type op, Context *context) {
       return doOperation(std::move(poincareOperators[i].op(*this)), *context, poincareOperators[i].nargs);
     }
   }
-  return I18n::Message::Default;
+  return I18n::Message::Warning;
 }
 
 struct SpecialOperators {
@@ -136,8 +136,73 @@ I18n::Message Stack::operator()(Stack::SpecialOperation op, Context *context) {
       return doOperation(std::move(specialOperators[i].op(*this)), *context, specialOperators[i].nargs);
     }
   }
-  return I18n::Message::Default;
+  return I18n::Message::Warning;
 }
+
+struct MessageOperators {
+  I18n::Message type;
+  int nargs;
+  Expression(*op)(const Stack&);
+};
+
+I18n::Message Stack::operator()(I18n::Message op, Context *context) {
+
+  const static MessageOperators messageOperators[] = {
+    { I18n::Message::AbsCommandWithArg, 1, [](const Stack& s) -> Expression { return AbsoluteValue::Builder(s(0)); } },
+    { I18n::Message::AcoshCommandWithArg, 1, [](const Stack& s) -> Expression { return HyperbolicArcCosine::Builder(s(0)); } },
+    { I18n::Message::ArgCommandWithArg, 1, [](const Stack& s) -> Expression { return ComplexArgument::Builder(s(0)); } },
+    { I18n::Message::AsinhCommandWithArg, 1, [](const Stack& s) -> Expression { return HyperbolicArcSine::Builder(s(0)); } },
+    { I18n::Message::AtanhCommandWithArg, 1, [](const Stack& s) -> Expression { return HyperbolicArcTangent::Builder(s(0)); } },
+    { I18n::Message::BinomialCommandWithArg, 2, [](const Stack& s) -> Expression { return BinomialCoefficient::Builder(s(1), s(0)); } },
+    { I18n::Message::BinomialCDFCommandWithArg, 3, [](const Stack& s) -> Expression { return BinomCDF::Builder(s(2), s(1), s(0)); } },
+    { I18n::Message::BinomialPDFCommandWithArg, 3, [](const Stack& s) -> Expression { return BinomPDF::Builder(s(2), s(1), s(0)); } },
+    { I18n::Message::CeilCommandWithArg, 1, [](const Stack& s) -> Expression { return Ceiling::Builder(s(0)); } },
+    { I18n::Message::ConfidenceCommandWithArg, 2, [](const Stack& s) -> Expression { return ConfidenceInterval::Builder(s(1), s(0)); } },
+    { I18n::Message::ConjCommandWithArg, 1, [](const Stack& s) -> Expression { return Conjugate::Builder(s(0)); } },
+    { I18n::Message::CoshCommandWithArg, 1, [](const Stack& s) -> Expression { return HyperbolicCosine::Builder(s(0)); } },
+    { I18n::Message::DeterminantCommandWithArg, 1, [](const Stack& s) -> Expression { return Determinant::Builder(s(0)); } },
+    //{ I18n::Message::DiffCommandWithArg, 3, [](const Stack& s) -> Expression { return Derivative::Builder(s(2), s(1), s(0)); } },
+    { I18n::Message::DimensionCommandWithArg, 1, [](const Stack& s) -> Expression { return MatrixDimension::Builder(s(0)); } },
+    { I18n::Message::FactorCommandWithArg, 1, [](const Stack& s) -> Expression { return Factor::Builder(s(0)); } },
+    { I18n::Message::FloorCommandWithArg, 1, [](const Stack& s) -> Expression { return Floor::Builder(s(0)); } },
+    { I18n::Message::FracCommandWithArg, 1, [](const Stack& s) -> Expression { return FracPart::Builder(s(0)); } },
+    { I18n::Message::GcdCommandWithArg, 2, [](const Stack& s) -> Expression { return GreatCommonDivisor::Builder(s(1), s(0)); } },
+    { I18n::Message::ImCommandWithArg, 1, [](const Stack& s) -> Expression { return ImaginaryPart::Builder(s(0)); } },
+    { I18n::Message::IndentityCommandWithArg, 1, [](const Stack& s) -> Expression { return MatrixIdentity::Builder(s(0)); } },
+    //{ I18n::Message::IntCommandWithArg, 4, [](const Stack& s) -> Expression { return Integral::Builder(s(3), s(2), s(1), s(0)); } },
+    { I18n::Message::InvBinomialCommandWithArg, 3, [](const Stack& s) -> Expression { return InvBinom::Builder(s(2), s(1), s(0)); } },
+    { I18n::Message::InverseCommandWithArg, 1, [](const Stack& s) -> Expression { return MatrixInverse::Builder(s(0)); } },
+    { I18n::Message::InvNormCommandWithArg, 3, [](const Stack& s) -> Expression { return InvNorm::Builder(s(2), s(1), s(0)); } },
+    { I18n::Message::LcmCommandWithArg, 2, [](const Stack& s) -> Expression { return LeastCommonMultiple::Builder(s(1), s(0)); } },
+    { I18n::Message::LogCommandWithArg, 2, [](const Stack& s) -> Expression { return Logarithm::Builder(s(1), s(0)); } },
+    { I18n::Message::NormCDFCommandWithArg, 3, [](const Stack& s) -> Expression { return NormCDF::Builder(s(2), s(1), s(0)); } },
+    { I18n::Message::NormCDF2CommandWithArg, 4, [](const Stack& s) -> Expression { return NormCDF2::Builder(s(3), s(2), s(1), s(0)); } },
+    { I18n::Message::NormPDFCommandWithArg, 3, [](const Stack& s) -> Expression { return NormPDF::Builder(s(2), s(1), s(0)); } },
+    { I18n::Message::Prediction95CommandWithArg, 2, [](const Stack& s) -> Expression { return SimplePredictionInterval::Builder(s(1), s(0)); } },
+    { I18n::Message::PredictionCommandWithArg, 2, [](const Stack& s) -> Expression { return PredictionInterval::Builder(s(1), s(0)); } },
+    //{ I18n::Message::ProductCommandWithArg, 4, [](const Stack& s) -> Expression { return Product::Builder(s(3), s(2), s(1), s(0)); } },
+    { I18n::Message::QuoCommandWithArg, 2, [](const Stack& s) -> Expression { return DivisionQuotient::Builder(s(1), s(0)); } },
+    //{ I18n::Message::RandintCommandWithArg, 2, [](const Stack& s) -> Expression { return Randint::Builder(s(1), s(0)); } },
+    //{ I18n::Message::RandomCommandWithArg, 0, [](const Stack& s) -> Expression { return Random::Builder(); } },
+    { I18n::Message::ReCommandWithArg, 1, [](const Stack& s) -> Expression { return RealPart::Builder(s(0)); } },
+    { I18n::Message::RemCommandWithArg, 2, [](const Stack& s) -> Expression { return DivisionRemainder::Builder(s(1), s(0)); } },
+    { I18n::Message::RootCommandWithArg, 2, [](const Stack& s) -> Expression { return NthRoot::Builder(s(1), s(0)); } },
+    { I18n::Message::RoundCommandWithArg, 2, [](const Stack& s) -> Expression { return Round::Builder(s(1), s(0)); } },
+    { I18n::Message::SinhCommandWithArg, 1, [](const Stack& s) -> Expression { return HyperbolicSine::Builder(s(0)); } },
+    //{ I18n::Message::SumCommandWithArg, 4, [](const Stack& s) -> Expression { return Sum::Builder(s(3), s(2), s(1), s(0)); } },
+    { I18n::Message::TanhCommandWithArg, 1, [](const Stack& s) -> Expression { return HyperbolicTangent::Builder(s(0)); } },
+    { I18n::Message::TraceCommandWithArg, 1, [](const Stack& s) -> Expression { return MatrixTrace::Builder(s(0)); } },
+    { I18n::Message::TransposeCommandWithArg, 1, [](const Stack& s) -> Expression { return MatrixTranspose::Builder(s(0)); } },
+  } ;
+
+  for (size_t i = 0; i < sizeof(messageOperators)/sizeof(messageOperators[0]); i++) {
+    if (messageOperators[i].type == op) {
+      return doOperation(std::move(messageOperators[i].op(*this)), *context, messageOperators[i].nargs);
+    }
+  }
+  return I18n::Message::Warning;
+}
+
 
 I18n::Message Stack::doOperation(Expression e, Context &context, int nargs) {
   if ((length() - nargs - 1) >= (k_stackSize - 1)) {
