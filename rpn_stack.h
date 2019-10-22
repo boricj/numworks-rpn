@@ -52,6 +52,8 @@ public:
   I18n::Message operator()(Poincare::ExpressionNode::Type op, Poincare::Context *context);
   I18n::Message operator()(I18n::Message op, Poincare::Context *context);
 
+  void dropNth(size_t index);
+
   int length() const { return m_length; }
   bool full() const { return m_length == k_stackSize; }
   bool empty() const { return m_length == 0; }

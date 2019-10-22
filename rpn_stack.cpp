@@ -203,6 +203,14 @@ I18n::Message Stack::operator()(I18n::Message op, Context *context) {
   return I18n::Message::Warning;
 }
 
+void Stack::dropNth(size_t index) {
+  if (!empty()) {
+    for (size_t i = index; i < length(); i++) {
+      m_stack[i] = m_stack[i+1];
+    }
+    m_length--;
+  }
+}
 
 I18n::Message Stack::doOperation(Expression e, Context &context, int nargs) {
   if ((length() - nargs - 1) >= (k_stackSize - 1)) {

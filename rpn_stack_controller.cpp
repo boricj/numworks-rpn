@@ -30,13 +30,37 @@ void StackController::didBecomeFirstResponder() {
 
 bool StackController::handleEvent(Ion::Events::Event event) {
   int stackRow = m_stack->length() - selectedRow() - 1;
+  bool handled = true;
+
   if (event == Ion::Events::Down || event == Ion::Events::Back) {
     stackView()->deselectTable();
     Container::activeApp()->setFirstResponder(m_inputController);
-    return true;
+  }
+  else if (event == Ion::Events::OK || event == Ion::Events::EXE) {
+    m_inputController->setText((*m_stack)[stackRow]);
+    Container::activeApp()->setFirstResponder(m_inputController);
+    reloadAndScroll();
+    stackView()->deselectTable();
+  }
+  else if (event == Ion::Events::Backspace) {
+    m_stack->dropNth(stackRow);
+    stackView()->reloadData(false);
+    if (stackRow == 0) {
+      stackView()->deselectTable();
+      stackView()->selectCellAtLocation(0, m_stack->length() - 1);
+    }
+  }
+  else if (event == Ion::Events::Clear) {
+    while (m_stack->length() > stackRow+1) {
+      (*m_stack)(Stack::POP);
+    }
+    reloadAndScroll();
+  }
+  else {
+    handled = false;
   }
 
-  return false;
+  return handled;
 }
 
 KDCoordinate StackController::rowHeight(int i) {
