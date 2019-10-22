@@ -3,8 +3,10 @@
 
 #include <escher.h>
 #include "../shared/text_field_delegate_app.h"
-#include "rpn_prompt_controller.h"
+#include "rpn_content_view.h"
 #include "rpn_stack.h"
+#include "rpn_stack_controller.h"
+#include "rpn_input_controller.h"
 
 namespace Rpn {
 
@@ -22,14 +24,18 @@ public:
     App * unpack(Container * container) override;
     void reset() override;
     Descriptor * descriptor() override;
-    RpnStack * rpnStack();
+    Stack * stack();
   private:
     void tidy() override;
-    RpnStack m_rpnStack;
+    Stack m_stack;
   };
 private:
-  App(Container * container, Snapshot * snapshot);
-  RpnPromptController m_rpnPromptController;
+  App(Snapshot * snapshot);
+
+  StackController m_stackController;
+  InputController m_inputController;
+  ContentView m_view;
+  
 };
 
 }
