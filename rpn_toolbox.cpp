@@ -19,7 +19,7 @@ bool Toolbox::selectLeaf(int selectedRow) {
 
   I18n::Message r = I18n::Message::Default;
   if (m_inputController->pushInput()) {
-    r = (*m_stackController)(messageTree->insertedText());
+    r = (*m_stackController)(messageTree->label());
   }
   Container::activeApp()->dismissModalViewController();
   if (r != I18n::Message::Default) {
