@@ -131,6 +131,7 @@ constexpr static Event2Type events2types[] {
 
   { Ion::Events::Ln, ExpressionNode::Type::NaperianLogarithm },
   { Ion::Events::Power, ExpressionNode::Type::Power },
+  { Ion::Events::Sto, ExpressionNode::Type::Store },
 
   { Ion::Events::Sine, ExpressionNode::Type::Sine },
   { Ion::Events::Cosine, ExpressionNode::Type::Cosine },
