@@ -65,11 +65,16 @@ bool InputController::textFieldDidHandleEvent(TextField * view, bool returnValue
 bool InputController::handleEventSpecial(Ion::Events::Event event, TextField * view) {
   const char *text = view->text();
   bool handled = true;
+  bool clearInput = true;
   I18n::Message r = I18n::Message::Default;
 
   if (event == Ion::Events::Up && !m_stackController->empty()) {
     view->setEditing(false);
     Container::activeApp()->setFirstResponder(m_stackController);
+  }
+  else if (event == Ion::Events::XNT) {
+    view->handleEventWithText("x");
+    clearInput = false;
   }
   else if (event == Ion::Events::Backspace && *text == '\0') {
     (*m_stackController)(Stack::POP);
@@ -83,23 +88,8 @@ bool InputController::handleEventSpecial(Ion::Events::Event event, TextField * v
       (*m_stackController)(Stack::CLEAR);
     }
   }
-  else if (event == Ion::Events::Exp) {
-    if (pushInput()) {
-      r = (*m_stackController)(Stack::Exp);
-    }
-  }
-  else if (event == Ion::Events::Log) {
-    if (pushInput()) {
-      r = (*m_stackController)(Stack::CommonLogarithm);
-    }
-  }
   else if (event == Ion::Events::Equal) {
     m_stackController->setApproximate(!m_stackController->approximate());
-  }
-  else if (event == Ion::Events::Square) {
-    if (pushInput()) {
-      r = (*m_stackController)(Stack::Square);
-    }
   }
   else if (event == Ion::Events::RightParenthesis) {
     (*m_stackController)(Stack::SWAP);
@@ -117,12 +107,12 @@ bool InputController::handleEventSpecial(Ion::Events::Event event, TextField * v
     handled = false;
   }
 
-  if (handled) {
-    inputView()->setText("");
-    inputView()->setCursorLocation(inputView()->text());
-  }
   if (r != I18n::Message::Default) {
     Container::activeApp()->displayWarning(r);
+  }
+  else if (handled && clearInput) {
+    inputView()->setText("");
+    inputView()->setCursorLocation(inputView()->text());
   }
 
   return handled;
@@ -153,11 +143,34 @@ constexpr static Event2Type events2types[] {
   { Ion::Events::Space, ExpressionNode::Type::Opposite },
 } ;
 
+struct Event2Special {
+  Ion::Events::Event event;
+  Stack::SpecialOperation op;
+} ;
+
+constexpr static Event2Special events2specials[] {
+  { Ion::Events::Exp, Stack::Exp },
+  { Ion::Events::Log, Stack::CommonLogarithm },
+  { Ion::Events::Square, Stack::Square },
+} ;
+
 bool InputController::handleEventOperation(Ion::Events::Event event, TextField * view) {
   for (size_t i = 0; i < sizeof(events2types)/sizeof(events2types[0]); i++) {
     if (events2types[i].event == event) {
       if (pushInput()) {
         auto r = (*m_stackController)(events2types[i].op);
+        if (r != I18n::Message::Default) {
+          Container::activeApp()->displayWarning(r);
+        }
+      }
+      return true;
+    }
+  }
+
+  for (size_t i = 0; i < sizeof(events2specials)/sizeof(events2specials[0]); i++) {
+    if (events2specials[i].event == event) {
+      if (pushInput()) {
+        auto r = (*m_stackController)(events2specials[i].op);
         if (r != I18n::Message::Default) {
           Container::activeApp()->displayWarning(r);
         }
