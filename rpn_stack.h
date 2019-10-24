@@ -10,7 +10,7 @@ namespace Rpn {
 
 class Stack {
 public:
-  constexpr static int k_stackSize = 8;
+  constexpr static size_t k_stackSize = 8;
   constexpr static int k_expressionSize = TextField::maxBufferSize();
 
   enum StackOperation {
@@ -54,7 +54,7 @@ public:
 
   void dropNth(size_t index);
 
-  int length() const { return m_length; }
+  size_t length() const { return m_length; }
   bool full() const { return m_length == k_stackSize; }
   bool empty() const { return m_length == 0; }
 
@@ -67,7 +67,7 @@ private:
   void pop();
 
   Element m_stack[k_stackSize];
-  int m_length;
+  size_t m_length;
 };
 
 }

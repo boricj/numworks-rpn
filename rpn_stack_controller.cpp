@@ -29,7 +29,7 @@ void StackController::didBecomeFirstResponder() {
 }
 
 bool StackController::handleEvent(Ion::Events::Event event) {
-  int stackRow = m_stack->length() - selectedRow() - 1;
+  size_t stackRow = m_stack->length() - selectedRow() - 1;
   bool handled = true;
 
   if (event == Ion::Events::Down || event == Ion::Events::Back) {
@@ -82,7 +82,7 @@ Poincare::Layout StackController::createLayout(int index) {
 }
 
 void StackController::reloadAndScroll(int index) {
-  if (index < 0 || index >= m_stack->length()) {
+  if (index < 0 || index >= static_cast<int>(m_stack->length())) {
     index = m_stack->length()-1;
   }
   stackView()->reloadData(false);

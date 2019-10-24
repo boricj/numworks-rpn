@@ -261,7 +261,7 @@ I18n::Message Stack::doOperation(Expression e, Context &context, int nargs) {
     // We don't want numbers on the stack to change on each evaluation.
     e = Shared::PoincareHelpers::Approximate<double>(e, &context);
   }
-  if ((length() - nargs - 1) >= (k_stackSize - 1)) {
+  if ((length() + nargs + 1) > (k_stackSize + nargs + 1)) {
     return I18n::Message::StorageMemoryFull1;
   }
   while(nargs) {
@@ -280,7 +280,7 @@ I18n::Message Stack::push(Element e) {
   if (full()) {
     return I18n::Message::StorageMemoryFull1;
   }
-  for (int i = k_stackSize-1; i > 0; i--) {
+  for (size_t i = k_stackSize-1; i > 0; i--) {
     m_stack[i] = m_stack[i-1];
   }
   m_stack[0] = e;
@@ -289,7 +289,7 @@ I18n::Message Stack::push(Element e) {
 }
 
 void Stack::pop() {
-  for (int i = 0; i < k_stackSize-1; i++) {
+  for (size_t i = 0; i < k_stackSize-1; i++) {
     m_stack[i] = m_stack[i+1];
   }
   m_stack[k_stackSize-1] = Element();
