@@ -4,6 +4,7 @@
 #include <utility>
 #include <poincare_nodes.h>
 #include <poincare/preferences.h>
+#include <poincare/expression_node.h>
 
 using namespace Poincare;
 
@@ -13,7 +14,7 @@ Stack::Element::Element() : expression("0"), approximate("0"), expressionHeight(
 }
 
 Stack::Element::Element(Expression &exp, Context &context) {
-  Expression exact = exp.simplify(&context, Preferences::sharedPreferences()->complexFormat(), Preferences::sharedPreferences()->angleUnit());
+  Expression exact = exp.simplify(&context, Preferences::sharedPreferences()->complexFormat(), Preferences::sharedPreferences()->angleUnit(), ExpressionNode::ReductionTarget::User);
   exact.serialize(expression, k_expressionSize);
   expressionHeight = exact.createLayout(
     Preferences::sharedPreferences()->displayMode(),
