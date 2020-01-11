@@ -97,6 +97,10 @@ bool InputController::handleEventSpecial(Ion::Events::Event event, TextField * v
   else if (event == Ion::Events::LeftParenthesis) {
     (*m_stackController)(Stack::ROT);
   }
+  else if (event == Ion::Events::Space) {
+    view->handleEventWithText("-");
+    clearInput = false;
+  }
   else if (event == Ion::Events::Ans) {
     r = (*m_stackController)(Stack::OVER);
   }
@@ -141,7 +145,6 @@ constexpr static Event2Type events2types[] {
   { Ion::Events::Arctangent, ExpressionNode::Type::ArcTangent },
 
   { Ion::Events::Sqrt, ExpressionNode::Type::SquareRoot },
-  { Ion::Events::Space, ExpressionNode::Type::Opposite },
 } ;
 
 struct Event2Special {
