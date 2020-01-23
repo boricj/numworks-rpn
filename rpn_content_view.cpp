@@ -24,11 +24,11 @@ View * ContentView::subviewAtIndex(int index) {
 }
 
 void ContentView::layoutSubviews() {
-  KDCoordinate inputViewFrameHeight = 32;
+  KDCoordinate inputViewFrameHeight = 38;
   KDRect mainViewFrame(0, 0, bounds().width(), bounds().height() - inputViewFrameHeight);
   m_stackView.setFrame(mainViewFrame);
   KDRect inputViewFrame(0, bounds().height() - inputViewFrameHeight, bounds().width(), inputViewFrameHeight);
-  m_inputView.setLeftMargin(4);
+  m_inputView.setLeftMargin(5);
   m_inputView.setFrame(inputViewFrame);
 }
 
