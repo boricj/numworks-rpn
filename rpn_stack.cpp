@@ -14,14 +14,14 @@ Stack::Element::Element() : expression("0"), approximate("0"), expressionHeight(
 }
 
 Stack::Element::Element(Expression &exp, Context &context) {
-  Expression exact = exp.simplify(&context, Preferences::sharedPreferences()->complexFormat(), Preferences::sharedPreferences()->angleUnit(), ExpressionNode::ReductionTarget::User);
-  exact.serialize(expression, k_expressionSize);
-  expressionHeight = exact.createLayout(
+  Shared::PoincareHelpers::Simplify(&exp, &context, ExpressionNode::ReductionTarget::User);
+  exp.serialize(expression, k_expressionSize);
+  expressionHeight = exp.createLayout(
     Preferences::sharedPreferences()->displayMode(),
     Preferences::sharedPreferences()->numberOfSignificantDigits()
   ).layoutSize().height();
 
-  Expression approx = exact.approximate<double>(
+  Expression approx = exp.approximate<double>(
     &context,
     Preferences::sharedPreferences()->complexFormat(),
     Preferences::sharedPreferences()->angleUnit()
@@ -34,7 +34,7 @@ Stack::Element::Element(Expression &exp, Context &context) {
 }
 
 I18n::Message Stack::operator()(const char *text, Context *context) {
-  Expression exp = Expression::Parse(text);
+  Expression exp = Expression::Parse(text, context);
   if (exp.isUninitialized()) {
     return I18n::Message::SyntaxError;
   }

@@ -22,9 +22,10 @@ public:
   /* View */
   int numberOfSubviews() const override { return 2; }
   View * subviewAtIndex(int index) override;
-  void layoutSubviews() override;
 
 private:
+  void layoutSubviews(bool force = false) override;
+
   SelectableTableView m_stackView;
   TextField m_inputView;
   char m_textBuffer[TextField::maxBufferSize()];

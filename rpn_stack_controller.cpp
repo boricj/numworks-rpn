@@ -77,7 +77,7 @@ void StackController::willDisplayCellForIndex(HighlightCell * cell, int index) {
 }
 
 Poincare::Layout StackController::createLayout(int index) {
-  Expression e = Expression::Parse((*m_stack)[m_stack->length() - index - 1]);
+  Expression e = Expression::Parse((*m_stack)[m_stack->length() - index - 1], nullptr);
   return e.createLayout(Preferences::sharedPreferences()->displayMode(), Preferences::sharedPreferences()->numberOfSignificantDigits());
 }
 

@@ -43,7 +43,7 @@ public:
   Stack() = default;
 
   const char* operator[](size_t idx) const { return approximate ? m_stack[idx].approximate : m_stack[idx].expression; }
-  Poincare::Expression operator()(size_t idx) const { return Poincare::Expression::Parse(m_stack[idx].expression); }
+  Poincare::Expression operator()(size_t idx, Poincare::Context* context = nullptr) const { return Poincare::Expression::Parse(m_stack[idx].expression, context); }
   KDCoordinate height(size_t idx) const { return approximate ? m_stack[idx].approximateHeight : m_stack[idx].expressionHeight; }
 
   I18n::Message operator()(const char* text, Poincare::Context *context);
