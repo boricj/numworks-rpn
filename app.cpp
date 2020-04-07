@@ -49,7 +49,7 @@ App::App(Snapshot * snapshot) :
   m_stackController(this, snapshot->stack(), &m_inputController, &m_view, localContext()),
   m_inputController(this, snapshot->stack(), &m_stackController, &m_view),
   m_view(this, &m_inputController, &m_stackController),
-  m_toolbox(AppsContainer::sharedAppsContainer()->mathToolbox()->rootModel(), &m_inputController, &m_stackController)
+  m_toolbox(&m_inputController, &m_stackController)
 {
 }
 

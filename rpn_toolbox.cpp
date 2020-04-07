@@ -5,11 +5,9 @@
 
 namespace Rpn {
 
-Toolbox::Toolbox(const ToolboxMessageTree * rootModel, InputController * inputController, StackController * stackController) :
-  ::Toolbox(nullptr, rootModel->label()),
+Toolbox::Toolbox(InputController * inputController, StackController * stackController) :
   m_inputController(inputController),
-  m_stackController(stackController),
-  m_rootModel(rootModel)
+  m_stackController(stackController)
 {
 }
 
@@ -26,24 +24,6 @@ bool Toolbox::selectLeaf(int selectedRow) {
     Container::activeApp()->displayWarning(r);
   }
   return true;
-}
-
-const ToolboxMessageTree * Toolbox::rootModel() const {
-  return m_rootModel;
-}
-
-MessageTableCellWithMessage * Toolbox::leafCellAtIndex(int index) {
-  assert(index >= 0 && index < k_maxNumberOfDisplayedRows);
-  return &m_leafCells[index];
-}
-
-MessageTableCellWithChevron* Toolbox::nodeCellAtIndex(int index) {
-  assert(index >= 0 && index < k_maxNumberOfDisplayedRows);
-  return &m_nodeCells[index];
-}
-
-int Toolbox::maxNumberOfDisplayedRows() {
- return k_maxNumberOfDisplayedRows;
 }
 
 }
