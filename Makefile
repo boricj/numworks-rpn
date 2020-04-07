@@ -1,7 +1,7 @@
 apps += Rpn::App
 app_headers += apps/rpn/app.h
 
-app_src += $(addprefix apps/rpn/,\
+apps_src += $(addprefix apps/rpn/,\
   app.cpp\
   rpn_content_view.cpp\
   rpn_input_controller.cpp\
