@@ -82,7 +82,6 @@ bool InputController::handleEventSpecial(Ion::Events::Event event, TextField * v
   else if (event == Ion::Events::Clear) {
     if (view->isEditing() && *text) {
       view->setText("");
-      view->setCursorLocation(view->text());
     }
     else {
       (*m_stackController)(Stack::CLEAR);
@@ -116,7 +115,6 @@ bool InputController::handleEventSpecial(Ion::Events::Event event, TextField * v
   }
   else if (handled && clearInput) {
     inputView()->setText("");
-    inputView()->setCursorLocation(inputView()->text());
   }
 
   return handled;
@@ -196,7 +194,6 @@ bool InputController::pushInput() {
   auto r = (*m_stackController)(text);
   if (r == I18n::Message::Default) {
     inputView()->setText("");
-    inputView()->setCursorLocation(inputView()->text());
     return true;
   }
   else {
