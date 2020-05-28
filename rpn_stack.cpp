@@ -16,6 +16,11 @@ Stack::Element::Element() : expression("0"), approximate("0"), expressionHeight(
 Stack::Element::Element(Expression &exp, Context &context) {
   Shared::PoincareHelpers::Simplify(&exp, &context, ExpressionNode::ReductionTarget::User);
   exp.serialize(expression, k_expressionSize);
+  if (strstr(expression, "undef") != nullptr) {
+    // Expression got too large, need to approximate.
+    exp = Shared::PoincareHelpers::Approximate<double>(exp, &context);
+    exp.serialize(expression, k_expressionSize);
+  }
   expressionHeight = exp.createLayout(
     Preferences::sharedPreferences()->displayMode(),
     Preferences::sharedPreferences()->numberOfSignificantDigits()
