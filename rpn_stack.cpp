@@ -6,6 +6,10 @@
 #include <poincare/preferences.h>
 #include <poincare/expression_node.h>
 
+extern "C" {
+#include "py/objstr.h"
+}
+
 using namespace Poincare;
 
 namespace Rpn {
@@ -16,7 +20,7 @@ Stack::Element::Element() : expression("0"), approximate("0"), expressionHeight(
 Stack::Element::Element(Expression &exp, Context &context) {
   Shared::PoincareHelpers::Simplify(&exp, &context, ExpressionNode::ReductionTarget::User);
   exp.serialize(expression, k_expressionSize);
-  if (strstr(expression, "undef") != nullptr) {
+  if (find_subbytes((const byte*)expression, strlen(expression), (const byte*)"undef", strlen("undef"), 1) != nullptr) {
     // Expression got too large, need to approximate.
     exp = Shared::PoincareHelpers::Approximate<double>(exp, &context);
     exp.serialize(expression, k_expressionSize);
