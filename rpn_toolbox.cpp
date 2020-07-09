@@ -12,7 +12,7 @@ Toolbox::Toolbox(InputController * inputController, StackController * stackContr
 }
 
 bool Toolbox::selectLeaf(int selectedRow) {
-  ToolboxMessageTree * messageTree = (ToolboxMessageTree *)m_messageTreeModel->children(selectedRow);
+  ToolboxMessageTree * messageTree = (ToolboxMessageTree *)m_messageTreeModel->childAtIndex(selectedRow);
   m_selectableTableView.deselectTable();
 
   I18n::Message r = I18n::Message::Default;
