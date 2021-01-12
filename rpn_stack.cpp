@@ -192,7 +192,7 @@ I18n::Message Stack::operator()(I18n::Message op, Context *context) {
     { I18n::Message::FactorCommandWithArg, 1, [](const Stack& s) -> Expression { return Factor::Builder(s(0)); } },
     { I18n::Message::FloorCommandWithArg, 1, [](const Stack& s) -> Expression { return Floor::Builder(s(0)); } },
     { I18n::Message::FracCommandWithArg, 1, [](const Stack& s) -> Expression { return FracPart::Builder(s(0)); } },
-    { I18n::Message::GcdCommandWithArg, 2, [](const Stack& s) -> Expression { return GreatCommonDivisor::Builder(s(1), s(0)); } },
+    { I18n::Message::GcdCommandWithArg, 2, [](const Stack& s) -> Expression { return GreatCommonDivisor::Builder({s(1), s(0)}); } },
     { I18n::Message::ImCommandWithArg, 1, [](const Stack& s) -> Expression { return ImaginaryPart::Builder(s(0)); } },
     { I18n::Message::IndentityCommandWithArg, 1, [](const Stack& s) -> Expression { return MatrixIdentity::Builder(s(0)); } },
 
@@ -207,7 +207,7 @@ I18n::Message Stack::operator()(I18n::Message op, Context *context) {
     { I18n::Message::InvBinomialCommandWithArg, 3, [](const Stack& s) -> Expression { return InvBinom::Builder(s(2), s(1), s(0)); } },
     { I18n::Message::InverseCommandWithArg, 1, [](const Stack& s) -> Expression { return MatrixInverse::Builder(s(0)); } },
     { I18n::Message::InvNormCommandWithArg, 3, [](const Stack& s) -> Expression { return InvNorm::Builder(s(2), s(1), s(0)); } },
-    { I18n::Message::LcmCommandWithArg, 2, [](const Stack& s) -> Expression { return LeastCommonMultiple::Builder(s(1), s(0)); } },
+    { I18n::Message::LcmCommandWithArg, 2, [](const Stack& s) -> Expression { return LeastCommonMultiple::Builder({s(1), s(0)}); } },
     { I18n::Message::LogCommandWithArg, 2, [](const Stack& s) -> Expression { return Logarithm::Builder(s(1), s(0)); } },
     { I18n::Message::NormCDFCommandWithArg, 3, [](const Stack& s) -> Expression { return NormCDF::Builder(s(2), s(1), s(0)); } },
     { I18n::Message::NormCDF2CommandWithArg, 4, [](const Stack& s) -> Expression { return NormCDF2::Builder(s(3), s(2), s(1), s(0)); } },

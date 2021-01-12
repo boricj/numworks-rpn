@@ -37,9 +37,6 @@ Stack * App::Snapshot::stack() {
   return &m_stack;
 }
 
-void App::Snapshot::tidy() {
-}
-
 void App::Snapshot::reset() {
   m_stack(Stack::CLEAR);
 }
