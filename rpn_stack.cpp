@@ -259,7 +259,8 @@ void Stack::dropNth(size_t index) {
     for (size_t i = index; i < length(); i++) {
       m_stack[i] = m_stack[i+1];
     }
-    m_length--;
+    m_length -= m_length > 0 ? 1 : 0;
+    m_stack[k_stackSize-1] = Element();
   }
 }
 
