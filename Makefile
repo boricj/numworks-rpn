@@ -10,16 +10,7 @@ apps_src += $(addprefix apps/rpn/,\
   rpn_toolbox.cpp\
 )
 
-i18n_files += $(addprefix apps/rpn/,\
-  base.de.i18n\
-  base.en.i18n\
-  base.es.i18n\
-  base.fr.i18n\
-  base.pt.i18n\
-  base.it.i18n\
-  base.nl.i18n\
-  base.hu.i18n\
-)
+i18n_files += $(call i18n_with_universal_for,rpn/base)
 
 $(eval $(call depends_on_image,apps/rpn/app.cpp,apps/rpn/rpn_icon.png))
 
